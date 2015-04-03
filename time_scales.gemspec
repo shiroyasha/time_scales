@@ -9,9 +9,8 @@ Gem::Specification.new do |spec|
   spec.authors       = ["Steve Jorgensen"]
   spec.email         = ["stevej@stevej.name"]
 
-  spec.summary       = %q{TODO: Write a short summary, because Rubygems requires one.}
-  spec.description   = %q{TODO: Write a longer description or delete this line.}
-  spec.homepage      = "TODO: Put your gem's website or public repo URL here."
+  spec.summary       = "Date/Time representations with specific scopes, units, and precisions"
+  spec.homepage      = "https://github.com/stevecj/time_scales"
   spec.license       = "MIT"
 
   spec.files         = `git ls-files -z`.split("\x0").reject { |f| f.match(%r{^(test|spec|features)/}) }
@@ -20,8 +19,10 @@ Gem::Specification.new do |spec|
   spec.require_paths = ["lib"]
 
   if spec.respond_to?(:metadata)
-    spec.metadata['allowed_push_host'] = "TODO: Set to 'http://mygemserver.com' to prevent pushes to rubygems.org, or delete to allow pushes to any server."
+    # spec.metadata['allowed_push_host'] = "TODO: Set to 'http://mygemserver.com' to prevent pushes to rubygems.org, or delete to allow pushes to any server."
   end
+
+  spec.required_ruby_version = ">= 1.9"
 
   spec.add_development_dependency "bundler", "~> 1.9"
   spec.add_development_dependency "rake", "~> 10.0"
