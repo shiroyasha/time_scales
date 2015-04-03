@@ -1,5 +1,6 @@
 require "time_scales/version"
+require "time_scales/frame"
 
 module TimeScales
-  # Your code goes here...
+
 end
