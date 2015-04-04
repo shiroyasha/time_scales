@@ -94,6 +94,29 @@ describe TimeScales::Frame do
     end
   end
 
+  it "rejects construction with a non-Fixnum month_of_quarter value" do
+    expect{ described_class[month_of_quarter: '3'] }.to raise_error( ArgumentError )
+    expect{ described_class[month_of_quarter: 2.0] }.to raise_error( ArgumentError )
+    expect{ described_class[month_of_quarter: nil] }.to raise_error( ArgumentError )
+  end
+
+  context "an instance for a specific month of quarter" do
+    subject { described_class[month_of_quarter: 2] }
+
+    it "exposes its quarter through its #month_of_quarter property" do
+      expect( subject.month_of_quarter ).to eq( 2 )
+    end
+
+    it "exposes its quarter through its #month property" do
+      expect( subject.month ).to eq( 2 )
+    end
+
+    it "is not convertible to a time or a range" do
+      expect( subject ).not_to respond_to( :to_time )
+      expect( subject ).not_to respond_to( :to_range )
+    end
+  end
+
   context "an instance for a specific year and quarter" do
     subject           { described_class[year: 1998, quarter: 3] }
     let( :subject_2 ) { described_class[year: 2010, quarter: 4] }

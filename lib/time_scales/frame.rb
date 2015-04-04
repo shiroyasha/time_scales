@@ -33,6 +33,8 @@ module TimeScales
         end
       elsif parts.key?(:month)
         Frame::MonthOfYearOnly.new( parts[:month] )
+      elsif parts.key?(:month_of_quarter)
+        Frame::MonthOfQuarterOnly.new( parts[:month_of_quarter] )
       else
         Frame::NullFrame.new
       end
@@ -98,6 +100,18 @@ module TimeScales
 
       def month
         month_of_year
+      end
+    end
+
+    class MonthOfQuarterOnly < Frame::Base
+      def initialize(month)
+        @month_of_quarter = ensure_fixnum( month )
+      end
+
+      attr_reader :month_of_quarter
+
+      def month
+        month_of_quarter
       end
     end
 
