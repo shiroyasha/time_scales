@@ -71,15 +71,19 @@ module TimeScales
     class NullFrame < Frame::Base
     end
 
-    class YearOfSchemeOnly < Frame::SchemeRelativeFrame
-      def initialize(year)
-        @year_of_scheme = ensure_fixnum( year )
-      end
-
+    module HasYearOfScheme
       attr_reader :year_of_scheme
 
       def year
         year_of_scheme
+      end
+    end
+
+    class YearOfSchemeOnly < Frame::SchemeRelativeFrame
+      include HasYearOfScheme
+
+      def initialize(year)
+        @year_of_scheme = ensure_fixnum( year )
       end
 
       def begin_time
@@ -91,11 +95,7 @@ module TimeScales
       end
     end
 
-    class MonthOfYearOnly < Frame::Base
-      def initialize(month)
-        @month_of_year = ensure_fixnum( month )
-      end
-
+    module HasMonthOfYear
       attr_reader :month_of_year
 
       def month
@@ -103,11 +103,15 @@ module TimeScales
       end
     end
 
-    class MonthOfQuarterOnly < Frame::Base
-      def initialize(month)
-        @month_of_quarter = ensure_fixnum( month )
-      end
+    class MonthOfYearOnly < Frame::Base
+      include HasMonthOfYear
 
+      def initialize(month)
+        @month_of_year = ensure_fixnum( month )
+      end
+    end
+
+    module HasMonthOfQuarter
       attr_reader :month_of_quarter
 
       def month
@@ -115,11 +119,15 @@ module TimeScales
       end
     end
 
-    class QuarterOfYearOnly < Frame::Base
-      def initialize(quarter)
-        @quarter_of_year = ensure_fixnum( quarter )
-      end
+    class MonthOfQuarterOnly < Frame::Base
+      include HasMonthOfQuarter
 
+      def initialize(month)
+        @month_of_quarter = ensure_fixnum( month )
+      end
+    end
+
+    module HasQuarterOfYear
       attr_reader :quarter_of_year
 
       def quarter
@@ -127,20 +135,21 @@ module TimeScales
       end
     end
 
+    class QuarterOfYearOnly < Frame::Base
+      include HasQuarterOfYear
+
+      def initialize(quarter)
+        @quarter_of_year = ensure_fixnum( quarter )
+      end
+    end
+
     class QuarterOfYear_Month < Frame::Base
+      include HasQuarterOfYear
+      include HasMonthOfQuarter
+
       def initialize(quarter, month)
         @quarter_of_year = ensure_fixnum( quarter )
         @month_of_quarter = ensure_fixnum( month )
-      end
-
-      attr_reader :quarter_of_year, :month_of_quarter
-
-      def quarter
-        quarter_of_year
-      end
-
-      def month
-        month_of_quarter
       end
     end
 
@@ -160,21 +169,13 @@ module TimeScales
     end
 
     class YearOfScheme_Month < SchemeRelativeFrame
+      include HasYearOfScheme
+      include HasMonthOfYear
       include HasMonthOfSchemePrecision
 
       def initialize(year, month)
         @year_of_scheme = ensure_fixnum( year )
         @month_of_year = ensure_fixnum( month )
-      end
-
-      attr_reader :year_of_scheme, :month_of_year
-
-      def year
-        year_of_scheme
-      end
-
-      def month
-        month_of_year
       end
 
       def begin_time
@@ -198,21 +199,13 @@ module TimeScales
     end
 
     class YearOfScheme_Quarter < SchemeRelativeFrame
+      include HasYearOfScheme
+      include HasQuarterOfYear
       include HasQuarterOfSchemePrecision
 
       def initialize(year, quarter)
         @year_of_scheme = ensure_fixnum( year )
         @quarter_of_year = ensure_fixnum( quarter )
-      end
-
-      attr_reader :year_of_scheme, :quarter_of_year
-
-      def year
-        year_of_scheme
-      end
-
-      def quarter
-        quarter_of_year
       end
 
       def begin_time
@@ -224,26 +217,15 @@ module TimeScales
     end
 
     class YearOfScheme_Quarter_Month < SchemeRelativeFrame
+      include HasYearOfScheme
+      include HasQuarterOfYear
+      include HasMonthOfQuarter
       include HasMonthOfSchemePrecision
 
       def initialize(year, quarter, month)
         @year_of_scheme = ensure_fixnum( year )
         @quarter_of_year = ensure_fixnum( quarter )
         @month_of_quarter = ensure_fixnum( month )
-      end
-
-      attr_reader :year_of_scheme, :quarter_of_year, :month_of_quarter
-
-      def year
-        year_of_scheme
-      end
-
-      def quarter
-        quarter_of_year
-      end
-
-      def month
-        @month_of_quarter
       end
 
       def begin_time
