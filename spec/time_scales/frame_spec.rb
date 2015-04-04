@@ -6,7 +6,12 @@ describe TimeScales::Frame do
 
     it "has no year-part attributes" do
       expect( subject ).not_to respond_to( :year )
-      expect( subject ).not_to respond_to( :year_of_scheme )
+      expect( subject.methods.grep( /^year_of/ ) ). to be_empty
+    end
+
+    it "has no month-part attributes" do
+      expect( subject ).not_to respond_to( :month )
+      expect( subject.methods.grep( /^month_of/ ) ). to be_empty
     end
   end
 
@@ -37,4 +42,28 @@ describe TimeScales::Frame do
       expect( subject.to_range ).to eq( year_start...next_year_start )
     end
   end
+
+  it "rejects construction with a non-Fixnum month value" do
+    expect{ described_class[month: '10'] }.to raise_error( ArgumentError )
+    expect{ described_class[month: 11.0] }.to raise_error( ArgumentError )
+    expect{ described_class[month: nil]  }.to raise_error( ArgumentError )
+  end
+
+  context "an instance for a specific month" do
+    subject { described_class[month: 11] }
+
+    it "exposes its month through its #month_of_year property" do
+      expect( subject.month_of_year ).to eq( 11 )
+    end
+
+    it "exposes its year through its #month property" do
+      expect( subject.month ).to eq( 11 )
+    end
+
+    it "is not convertible to a time or a range" do
+      expect( subject ).not_to respond_to( :to_time )
+      expect( subject ).not_to respond_to( :to_range )
+    end
+  end
+
 end
