@@ -6,14 +6,22 @@ module TimeScales
     def self.[](parts = {})
       if parts.key?(:year)
         if parts.key?(:quarter)
-          Frame::YearOfScheme_Quarter.new( *parts.values_at(:year, :quarter) )
+          if parts.key?(:month)
+            Frame::YearOfScheme_Quarter_Month.new( *parts.values_at(:year, :quarter, :month) )
+          else
+            Frame::YearOfScheme_Quarter.new( *parts.values_at(:year, :quarter) )
+          end
         elsif parts.key?(:month)
           Frame::YearOfScheme_Month.new( *parts.values_at(:year, :month) )
         else
           Frame::YearOfSchemeOnly.new( parts[:year] )
         end
       elsif parts.key?(:quarter)
-        Frame::QuarterOfYearOnly.new( parts[:quarter] )
+        if parts.key?(:month)
+          Frame::QuarterOfYear_Month.new( *parts.values_at(:quarter, :month) )
+        else
+          Frame::QuarterOfYearOnly.new( parts[:quarter] )
+        end
       elsif parts.key?(:month)
         Frame::MonthOfYearOnly.new( parts[:month] )
       else
@@ -68,7 +76,7 @@ module TimeScales
       end
 
       def succ_begin_time
-        @end_time ||= Time.new( year_of_scheme + 1 )
+        @end_time ||= Time.new( begin_time.year + 1 )
       end
     end
 
@@ -96,7 +104,41 @@ module TimeScales
       end
     end
 
+    class QuarterOfYear_Month < Frame::Base
+      def initialize(quarter, month)
+        @quarter_of_year = ensure_fixnum( quarter )
+        @month_of_quarter = ensure_fixnum( month )
+      end
+
+      attr_reader :quarter_of_year, :month_of_quarter
+
+      def quarter
+        quarter_of_year
+      end
+
+      def month
+        month_of_quarter
+      end
+    end
+
+    module HasMonthOfSchemePrecision
+
+      def succ_begin_time
+        @end_time ||= begin
+          succ_y = year_of_scheme
+          succ_m = begin_time.month + 1
+          if succ_m > 12
+            succ_y += 1 ; succ_m = 1
+          end
+          Time.new( succ_y, succ_m )
+        end
+      end
+
+    end
+
     class YearOfScheme_Month < SchemeRelativeFrame
+      include HasMonthOfSchemePrecision
+
       def initialize(year, month)
         @year_of_scheme = ensure_fixnum( year )
         @month_of_year = ensure_fixnum( month )
@@ -115,20 +157,26 @@ module TimeScales
       def begin_time
         @begin_time ||= Time.new( year_of_scheme, month_of_year )
       end
+    end
+
+    module HasQuarterOfSchemePrecision
 
       def succ_begin_time
         @end_time ||= begin
           succ_y = year_of_scheme
-          succ_m = month_of_year + 1
+          succ_m = begin_time.month + 3
           if succ_m > 12
             succ_y += 1 ; succ_m = 1
           end
           Time.new( succ_y, succ_m )
         end
       end
+
     end
 
     class YearOfScheme_Quarter < SchemeRelativeFrame
+      include HasQuarterOfSchemePrecision
+
       def initialize(year, quarter)
         @year_of_scheme = ensure_fixnum( year )
         @quarter_of_year = ensure_fixnum( quarter )
@@ -150,15 +198,35 @@ module TimeScales
           Time.new( year_of_scheme, m )
         end
       end
+    end
 
-      def succ_begin_time
-        @end_time ||= begin
-          succ_y = year_of_scheme
-          succ_m = begin_time.month + 3
-          if succ_m > 12
-            succ_y += 1 ; succ_m = 1
-          end
-          Time.new( succ_y, succ_m )
+    class YearOfScheme_Quarter_Month < SchemeRelativeFrame
+      include HasMonthOfSchemePrecision
+
+      def initialize(year, quarter, month)
+        @year_of_scheme = ensure_fixnum( year )
+        @quarter_of_year = ensure_fixnum( quarter )
+        @month_of_quarter = ensure_fixnum( month )
+      end
+
+      attr_reader :year_of_scheme, :quarter_of_year, :month_of_quarter
+
+      def year
+        year_of_scheme
+      end
+
+      def quarter
+        quarter_of_year
+      end
+
+      def month
+        @month_of_quarter
+      end
+
+      def begin_time
+        @begin_time ||= begin
+          m = (quarter_of_year - 1) * 3 + month_of_quarter
+          Time.new( year_of_scheme, m )
         end
       end
     end

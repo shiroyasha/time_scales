@@ -80,11 +80,11 @@ describe TimeScales::Frame do
   context "an instance for a specific quarter" do
     subject { described_class[quarter: 3] }
 
-    it "exposes its wuarter through its #quarter_of_year property" do
+    it "exposes its quarter through its #quarter_of_year property" do
       expect( subject.quarter_of_year ).to eq( 3 )
     end
 
-    it "exposes its quarter through its #quarter_of_year property" do
+    it "exposes its quarter through its #quarter property" do
       expect( subject.quarter ).to eq( 3 )
     end
 
@@ -95,7 +95,7 @@ describe TimeScales::Frame do
   end
 
   context "an instance for a specific year and quarter" do
-    subject { described_class[year: 1998, quarter: 3] }
+    subject           { described_class[year: 1998, quarter: 3] }
     let( :subject_2 ) { described_class[year: 2010, quarter: 4] }
 
     it "exposes its year through its #year_of_scheme property" do
@@ -130,7 +130,7 @@ describe TimeScales::Frame do
   end
 
   context "an instance for a specific year and month" do
-    subject { described_class[year: 2001, month: 10] }
+    subject           { described_class[year: 2001, month: 10] }
     let( :subject_2 ) { described_class[year: 2015, month: 12] }
 
     it "exposes its year through its #year_of_scheme property" do
@@ -163,5 +163,80 @@ describe TimeScales::Frame do
       expect( subject_2.to_range ).to eq( frame_start...next_frame_start )
     end
   end
+
+  context "an instance for a specific quarter and month" do
+    subject { described_class[quarter: 2, month: 3] }
+
+    it "exposes its quarter through its #quarter_of_year property" do
+      expect( subject.quarter_of_year ).to eq( 2 )
+    end
+
+    it "exposes its quarter through its #quarter property" do
+      expect( subject.quarter ).to eq( 2 )
+    end
+
+    it "exposes its month through its #month_of_quarter property" do
+      expect( subject.month_of_quarter ).to eq( 3 )
+    end
+
+    it "exposes its month through its #month property" do
+      expect( subject.month ).to eq( 3 )
+    end
+
+    it "is not convertible to a time or a range" do
+      expect( subject ).not_to respond_to( :to_time )
+      expect( subject ).not_to respond_to( :to_range )
+    end
+  end
+
+  context "an instance for a specific year, quarter, and month" do
+    subject           { described_class[year: 1991, quarter: 2, month: 3] }
+    let( :subject_2 ) { described_class[year: 1995, quarter: 3, month: 2] }
+    let( :subject_3 ) { described_class[year: 1997, quarter: 4, month: 3] }
+
+    it "exposes its year through its #year_of_scheme property" do
+      expect( subject.year_of_scheme ).to eq( 1991 )
+    end
+
+    it "exposes its year through its #year property" do
+      expect( subject.year ).to eq( 1991 )
+    end
+
+    it "exposes its quarter through its #quarter_of_year property" do
+      expect( subject.quarter_of_year ).to eq( 2 )
+    end
+
+    it "exposes its quarter through its #quarter property" do
+      expect( subject.quarter ).to eq( 2 )
+    end
+
+    it "exposes its month through its #month_of_quarter property" do
+      expect( subject.month_of_quarter ).to eq( 3 )
+    end
+
+    it "exposes its month through its #month property" do
+      expect( subject.month ).to eq( 3 )
+    end
+
+
+    it "is convertible to the time at the start of the month" do
+      expect( subject.to_time ).to eq( Time.new(1991, 6, 1, 0, 0, 0) )
+    end
+
+    it "is convertible to range from month start until (but not including) next month start" do
+      frame_start      = Time.new(1991, 6, 1, 0, 0, 0)
+      next_frame_start = Time.new(1991, 7, 1, 0, 0, 0)
+      expect( subject.to_range ).to eq( frame_start...next_frame_start )
+
+      frame_start      = Time.new(1995, 8, 1, 0, 0, 0)
+      next_frame_start = Time.new(1995, 9, 1, 0, 0, 0)
+      expect( subject_2.to_range ).to eq( frame_start...next_frame_start )
+
+      frame_start      = Time.new(1997, 12, 1, 0, 0, 0)
+      next_frame_start = Time.new(1998,  1, 1, 0, 0, 0)
+      expect( subject_3.to_range ).to eq( frame_start...next_frame_start )
+    end
+  end
+
 
 end
