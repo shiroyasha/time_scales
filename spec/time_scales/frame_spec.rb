@@ -1,6 +1,15 @@
 require 'spec_helper'
 
 describe TimeScales::Frame do
+  context "an instance with no parts" do
+    subject { described_class[] }
+
+    it "has no year-part attributes" do
+      expect( subject ).not_to respond_to( :year )
+      expect( subject ).not_to respond_to( :year_of_scheme )
+    end
+  end
+
   it "rejects construction with a non-Fixnum year value" do
     expect{ described_class[year: '2010'] }.to raise_error( ArgumentError )
     expect{ described_class[year: 2010.0] }.to raise_error( ArgumentError )
