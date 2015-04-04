@@ -6,8 +6,13 @@ module TimeScales
     def self.[](parts = {})
       if parts.key?(:year)
         if parts.key?(:quarter)
-          if parts.key?(:month)
-            Frame::YearOfScheme_Quarter_Month.new( *parts.values_at(:year, :quarter, :month) )
+          if parts.key?(:month) || parts.key?(:month_of_quarter)
+            part_args = [
+              parts[:year],
+              parts[:quarter],
+              parts[:month] || parts[:month_of_quarter]
+            ]
+            Frame::YearOfScheme_Quarter_Month.new( *part_args )
           else
             Frame::YearOfScheme_Quarter.new( *parts.values_at(:year, :quarter) )
           end
@@ -17,8 +22,12 @@ module TimeScales
           Frame::YearOfSchemeOnly.new( parts[:year] )
         end
       elsif parts.key?(:quarter)
-        if parts.key?(:month)
-          Frame::QuarterOfYear_Month.new( *parts.values_at(:quarter, :month) )
+        if parts.key?(:month) || parts.key?(:month_of_quarter)
+          part_args = [
+            parts[:quarter],
+            parts[:month] || parts[:month_of_quarter]
+          ]
+          Frame::QuarterOfYear_Month.new( *part_args )
         else
           Frame::QuarterOfYearOnly.new( parts[:quarter] )
         end

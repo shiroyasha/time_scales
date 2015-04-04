@@ -164,35 +164,45 @@ describe TimeScales::Frame do
     end
   end
 
-  context "an instance for a specific quarter and month" do
-    subject { described_class[quarter: 2, month: 3] }
+  context "an instance for a specific quarter and month (of quarter)" do
+    subject           { described_class[quarter: 2, month:            3] }
+    let( :subject_2 ) { described_class[quarter: 4, month_of_quarter: 2] }
 
     it "exposes its quarter through its #quarter_of_year property" do
-      expect( subject.quarter_of_year ).to eq( 2 )
+      expect( subject.quarter_of_year   ).to eq( 2 )
+      expect( subject_2.quarter_of_year ).to eq( 4 )
     end
 
     it "exposes its quarter through its #quarter property" do
-      expect( subject.quarter ).to eq( 2 )
+      expect( subject.quarter   ).to eq( 2 )
+      expect( subject_2.quarter ).to eq( 4 )
     end
 
     it "exposes its month through its #month_of_quarter property" do
-      expect( subject.month_of_quarter ).to eq( 3 )
+      expect( subject.month_of_quarter   ).to eq( 3 )
+      expect( subject_2.month_of_quarter ).to eq( 2 )
     end
 
     it "exposes its month through its #month property" do
-      expect( subject.month ).to eq( 3 )
+      expect( subject.month   ).to eq( 3 )
+      expect( subject_2.month ).to eq( 2 )
     end
 
-    it "is not convertible to a time or a range" do
-      expect( subject ).not_to respond_to( :to_time )
-      expect( subject ).not_to respond_to( :to_range )
+    it "is not convertible to a time" do
+      expect( subject   ).not_to respond_to( :to_time )
+      expect( subject_2 ).not_to respond_to( :to_time )
+    end
+
+    it "is not convertible to a range" do
+      expect( subject   ).not_to respond_to( :to_range )
+      expect( subject_2 ).not_to respond_to( :to_range )
     end
   end
 
-  context "an instance for a specific year, quarter, and month" do
-    subject           { described_class[year: 1991, quarter: 2, month: 3] }
-    let( :subject_2 ) { described_class[year: 1995, quarter: 3, month: 2] }
-    let( :subject_3 ) { described_class[year: 1997, quarter: 4, month: 3] }
+  context "an instance for a specific year, quarter, and month (of quarter)" do
+    subject           { described_class[year: 1991, quarter: 2, month:            3] }
+    let( :subject_2 ) { described_class[year: 1995, quarter: 3, month:            2] }
+    let( :subject_3 ) { described_class[year: 1997, quarter: 4, month_of_quarter: 3] }
 
     it "exposes its year through its #year_of_scheme property" do
       expect( subject.year_of_scheme ).to eq( 1991 )
