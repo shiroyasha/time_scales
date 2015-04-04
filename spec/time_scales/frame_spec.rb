@@ -1,6 +1,12 @@
 require 'spec_helper'
 
 describe TimeScales::Frame do
+  it "rejects construction with a non-Fixnum year value" do
+    expect{ described_class[year: '2010'] }.to raise_error( ArgumentError )
+    expect{ described_class[year: 2010.0] }.to raise_error( ArgumentError )
+    expect{ described_class[year: nil]    }.to raise_error( ArgumentError )
+  end
+
   context "an instance for a specific year" do
     subject { described_class[year: 2014] }
 
@@ -13,12 +19,10 @@ describe TimeScales::Frame do
     end
 
     it "is convertible to the time at the start of the year" do
-      pending
       expect( subject.to_time ).to eq( Time.new(2014, 1, 1, 0, 0, 0) )
     end
 
     it "is convertible to range from year start until (but not including) next year start" do
-      pending
       year_start      = Time.new(2014, 1, 1, 0, 0, 0)
       next_year_start = Time.new(2015, 1, 1, 0, 0, 0)
       expect( subject.to_range ).to eq( year_start...next_year_start )
