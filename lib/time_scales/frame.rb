@@ -17,10 +17,38 @@ module TimeScales
       end
     end
 
-    class NullFrame
+    class Base
+
+      private
+
+      def ensure_fixnum(value)
+        return value if Fixnum === value
+        raise ArgumentError, "Time part value must be of Fixnum type (a numeric integer)"
+      end
     end
 
-    class YearOfSchemeOnly
+    class SchemeRelativeFrame < Frame::Base
+      def to_time
+        begin_time
+      end
+
+      def to_range
+        @to_range ||= ( begin_time...succ_begin_time )
+      end
+
+      def begin_time
+        raise NotImplementedError, "Subclass responsibility"
+      end
+
+      def succ_begin_time
+        raise NotImplementedError, "Subclass responsibility"
+      end
+    end
+
+    class NullFrame < Frame::Base
+    end
+
+    class YearOfSchemeOnly < Frame::SchemeRelativeFrame
       def initialize(year)
         @year_of_scheme = ensure_fixnum( year )
       end
@@ -31,14 +59,6 @@ module TimeScales
         year_of_scheme
       end
 
-      def to_time
-        begin_time
-      end
-
-      def to_range
-        @to_range ||= ( begin_time...succ_begin_time )
-      end
-
       def begin_time
         @begin_time ||= Time.new( year_of_scheme )
       end
@@ -46,16 +66,9 @@ module TimeScales
       def succ_begin_time
         @end_time ||= Time.new( year_of_scheme + 1 )
       end
-
-      private
-
-      def ensure_fixnum(value)
-        return value if Fixnum === value
-        raise ArgumentError, "Time part value must be of Fixnum type (a numeric integer)"
-      end
     end
 
-    class MonthOfYearOnly
+    class MonthOfYearOnly < Frame::Base
       def initialize(month)
         @month_of_year = ensure_fixnum( month )
       end
@@ -65,16 +78,9 @@ module TimeScales
       def month
         month_of_year
       end
-
-      private
-
-      def ensure_fixnum(value)
-        return value if Fixnum === value
-        raise ArgumentError, "Time part value must be of Fixnum type (a numeric integer)"
-      end
     end
 
-    class YearOfScheme_Month
+    class YearOfScheme_Month < SchemeRelativeFrame
       def initialize(year, month)
         @year_of_scheme = ensure_fixnum( year )
         @month_of_year = ensure_fixnum( month )
@@ -90,14 +96,6 @@ module TimeScales
         month_of_year
       end
 
-      def to_time
-        begin_time
-      end
-
-      def to_range
-        @to_range ||= ( begin_time...succ_begin_time )
-      end
-
       def begin_time
         @begin_time ||= Time.new( year_of_scheme, month_of_year )
       end
@@ -111,13 +109,6 @@ module TimeScales
           end
           Time.new( succ_y, succ_m )
         end
-      end
-
-      private
-
-      def ensure_fixnum(value)
-        return value if Fixnum === value
-        raise ArgumentError, "Time part value must be of Fixnum type (a numeric integer)"
       end
     end
 
