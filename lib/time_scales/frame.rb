@@ -5,7 +5,11 @@ module TimeScales
   module Frame
     def self.[](parts = {})
       if parts.key?(:year)
-        Frame::YearOfSchemeOnly.new( parts[:year] )
+        if parts.key?(:month)
+          Frame::YearOfScheme_Month.new( *parts.values_at(:year, :month) )
+        else
+          Frame::YearOfSchemeOnly.new( parts[:year] )
+        end
       elsif parts.key?(:month)
         Frame::MonthOfYearOnly.new( parts[:month] )
       else
@@ -60,6 +64,53 @@ module TimeScales
 
       def month
         month_of_year
+      end
+
+      private
+
+      def ensure_fixnum(value)
+        return value if Fixnum === value
+        raise ArgumentError, "Time part value must be of Fixnum type (a numeric integer)"
+      end
+    end
+
+    class YearOfScheme_Month
+      def initialize(year, month)
+        @year_of_scheme = ensure_fixnum( year )
+        @month_of_year = ensure_fixnum( month )
+      end
+
+      attr_reader :year_of_scheme, :month_of_year
+
+      def year
+        year_of_scheme
+      end
+
+      def month
+        month_of_year
+      end
+
+      def to_time
+        begin_time
+      end
+
+      def to_range
+        @to_range ||= ( begin_time...succ_begin_time )
+      end
+
+      def begin_time
+        @begin_time ||= Time.new( year_of_scheme, month_of_year )
+      end
+
+      def succ_begin_time
+        @end_time ||= begin
+          succ_y = year_of_scheme
+          succ_m = month_of_year + 1
+          if succ_m > 12
+            succ_y += 1 ; succ_m = 1
+          end
+          Time.new( succ_y, succ_m )
+        end
       end
 
       private
