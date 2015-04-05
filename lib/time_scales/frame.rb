@@ -1,46 +1,64 @@
 require 'time'
+require 'singleton'
 
 module TimeScales
 
   module Frame
-    def self.[](parts = {})
-      if parts.key?(:year)
-        if parts.key?(:quarter)
-          if parts.key?(:month) || parts.key?(:month_of_quarter)
-            part_args = [
-              parts[:year],
-              parts[:quarter],
-              parts[:month] || parts[:month_of_quarter]
-            ]
-            Frame::YearOfScheme_Quarter_Month.new( *part_args )
-          else
-            Frame::YearOfScheme_Quarter.new( *parts.values_at(:year, :quarter) )
-          end
-        elsif parts.key?(:month)
-          Frame::YearOfScheme_Month.new( *parts.values_at(:year, :month) )
-        else
-          Frame::YearOfSchemeOnly.new( parts[:year] )
-        end
-      elsif parts.key?(:quarter)
-        if parts.key?(:month) || parts.key?(:month_of_quarter)
-          part_args = [
-            parts[:quarter],
-            parts[:month] || parts[:month_of_quarter]
-          ]
-          Frame::QuarterOfYear_Month.new( *part_args )
-        else
-          Frame::QuarterOfYearOnly.new( parts[:quarter] )
-        end
-      elsif parts.key?(:month)
-        Frame::MonthOfYearOnly.new( parts[:month] )
-      elsif parts.key?(:month_of_quarter)
-        Frame::MonthOfQuarterOnly.new( parts[:month_of_quarter] )
-      else
-        Frame::NullFrame.new
+    def self.frame_types
+      @frame_types ||=
+        constants.
+        map { |c_name| const_get(c_name) }.
+        select { |c_value| Class === c_value }.
+        select { |c_class| c_class.ancestors.include?( Frame::Base ) }.
+        reject { |frame_class| frame_class == Frame::Base }
+    end
+
+    def self.[](frame_parts = {})
+      return Frame::NullFrame.instance if frame_parts.keys.empty?
+
+      frame_part_types = frame_parts.keys.map { |key|
+        [
+          key,
+          Parts.all.select { |type| type === key }
+        ]
+      }
+      frame_part_types.sort_by! { |(key,types)| -types.first.scale }
+
+      frame_part_types.first[1].select! { |type|
+        type.symbol == frame_part_types.first[0] ||
+          type.default_for_unit?
+      }
+
+      frame_part_types[0..-2].zip( frame_part_types[1..-1] ).each do |(_,a),(_,b)|
+        scope_symbol = a.first.subdivision_symbol
+        b.select! { |type| type.scope_symbol == scope_symbol }
       end
+
+      types = frame_part_types.map { |i| i[1][0] }
+
+      klass = frame_types.detect{ |f_type| f_type.parts == types }
+
+      key_seq = frame_part_types.map { |key,_| key }
+
+      klass.new( *frame_parts.values_at( *key_seq ) )
     end
 
     class Base
+
+      class << self
+        def parts
+          @parts ||=
+            _parts.
+            sort_by { |part| -part.scale }.
+            freeze
+        end
+
+        private
+
+        def _parts
+          []
+        end
+      end
 
       private
 
@@ -69,13 +87,26 @@ module TimeScales
     end
 
     class NullFrame < Frame::Base
+      include Singleton
     end
 
     module HasYearOfScheme
+      def self.included(other)
+        other.extend HasYearOfScheme::ClassMixin
+      end
+
       attr_reader :year_of_scheme
 
       def year
         year_of_scheme
+      end
+
+      module ClassMixin
+        protected
+
+        def _parts
+          super << Parts::YearOfScheme
+        end
       end
     end
 
@@ -96,10 +127,22 @@ module TimeScales
     end
 
     module HasMonthOfYear
+      def self.included(other)
+        other.extend HasMonthOfYear::ClassMixin
+      end
+
       attr_reader :month_of_year
 
       def month
         month_of_year
+      end
+
+      module ClassMixin
+        protected
+
+        def _parts
+          super << Parts::MonthOfYear
+        end
       end
     end
 
@@ -112,10 +155,22 @@ module TimeScales
     end
 
     module HasMonthOfQuarter
+      def self.included(other)
+        other.extend HasMonthOfQuarter::ClassMixin
+      end
+
       attr_reader :month_of_quarter
 
       def month
         month_of_quarter
+      end
+
+      module ClassMixin
+        protected
+
+        def _parts
+          super << Parts::MonthOfQuarter
+        end
       end
     end
 
@@ -128,10 +183,22 @@ module TimeScales
     end
 
     module HasQuarterOfYear
+      def self.included(other)
+        other.extend HasQuarterOfYear::ClassMixin
+      end
+
       attr_reader :quarter_of_year
 
       def quarter
         quarter_of_year
+      end
+
+      module ClassMixin
+        protected
+
+        def _parts
+          super << Parts::QuarterOfYear
+        end
       end
     end
 
