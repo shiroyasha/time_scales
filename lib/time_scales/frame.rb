@@ -1,5 +1,4 @@
 require 'time'
-require 'singleton'
 
 module TimeScales
 
@@ -24,8 +23,10 @@ module TimeScales
       def possible_parts
         @possible_parts ||= begin
           parts = Parts.all.select { |part| part === key }
-          exact = parts.select { |part| part.symbol == key }
-          exact.empty? ? parts : exact
+          if parts.empty?
+            parts = Parts.all.select { |part| part.subdivision === key }
+          end
+          parts
         end
       end
 
@@ -41,7 +42,7 @@ module TimeScales
 
       def component_of!(scope)
         @part = possible_parts.detect { |part|
-          part.scope_symbol == scope.subdivision_symbol
+          scope.subdivision === part.scope
         }
       end
     end
