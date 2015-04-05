@@ -13,34 +13,55 @@ module TimeScales
         reject { |frame_class| frame_class == Frame::Base }
     end
 
+    class FrameAssemblyPart
+      attr_reader :key, :value, :part
+
+      def initialize(key, value)
+        @key   = key
+        @value = value
+      end
+
+      def possible_parts
+        @possible_parts ||= begin
+          parts = Parts.all.select { |part| part === key }
+          exact = parts.select { |part| part.symbol == key }
+          exact.empty? ? parts : exact
+        end
+      end
+
+      def scale
+        possible_parts.first.scale
+      end
+
+      def outer_scope!
+        @part = possible_parts.length == 1 ?
+          possible_parts.first :
+          possible_parts.detect { |part| part.default_for_unit? }
+      end
+
+      def component_of!(scope)
+        @part = possible_parts.detect { |part|
+          part.scope_symbol == scope.subdivision_symbol
+        }
+      end
+    end
+
     def self.[](frame_parts = {})
       return Frame::NullFrame.instance if frame_parts.keys.empty?
 
-      frame_part_types = frame_parts.keys.map { |key|
-        [
-          key,
-          Parts.all.select { |type| type === key }
-        ]
-      }
-      frame_part_types.sort_by! { |(key,types)| -types.first.scale }
+      faps = frame_parts.map{ |key,value| FrameAssemblyPart.new( key, value ) }
+      faps.sort_by! { |fap| -fap.scale }
 
-      frame_part_types.first[1].select! { |type|
-        type.symbol == frame_part_types.first[0] ||
-          type.default_for_unit?
-      }
-
-      frame_part_types[0..-2].zip( frame_part_types[1..-1] ).each do |(_,a),(_,b)|
-        scope_symbol = a.first.subdivision_symbol
-        b.select! { |type| type.scope_symbol == scope_symbol }
+      faps.first.outer_scope!
+      faps[0..-2].zip( faps[1..-1] ).each do |a,b|
+        b.component_of! a.part
       end
 
-      types = frame_part_types.map { |i| i[1][0] }
+      parts = faps.map { |fap| fap.part }
+      klass = frame_types.detect { |type| type.parts == parts }
 
-      klass = frame_types.detect{ |f_type| f_type.parts == types }
-
-      key_seq = frame_part_types.map { |key,_| key }
-
-      klass.new( *frame_parts.values_at( *key_seq ) )
+      values = faps.map { |fap| fap.value }
+      klass.new( *values )
     end
 
     class Base
