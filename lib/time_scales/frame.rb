@@ -100,11 +100,21 @@ module TimeScales
       end
 
       def begin_time
-        raise NotImplementedError, "Subclass responsibility"
+        @begin_time = begin
+          struct = TimeStruct.new
+          prepare_time_struct struct
+          Time.new( *struct.to_a )
+        end
       end
 
       def succ_begin_time
         raise NotImplementedError, "Subclass responsibility"
+      end
+
+      private
+
+      def prepare_time_struct(struct)
+        # stub
       end
     end
 
@@ -123,6 +133,13 @@ module TimeScales
         year_of_scheme
       end
 
+      private
+
+      def prepare_time_struct(struct)
+        struct.year = (struct.year || 1) + year_of_scheme - 1
+        super
+      end
+
       module ClassMixin
         protected
 
@@ -139,10 +156,6 @@ module TimeScales
         @year_of_scheme = ensure_fixnum( year )
       end
 
-      def begin_time
-        @begin_time ||= Time.new( year_of_scheme )
-      end
-
       def succ_begin_time
         @end_time ||= Time.new( begin_time.year + 1 )
       end
@@ -157,6 +170,13 @@ module TimeScales
 
       def month
         month_of_year
+      end
+
+      private
+
+      def prepare_time_struct(struct)
+        struct.month = (struct.month || 1) + month_of_year - 1
+        super
       end
 
       module ClassMixin
@@ -187,6 +207,13 @@ module TimeScales
         month_of_quarter
       end
 
+      private
+
+      def prepare_time_struct(struct)
+        struct.month = (struct.month || 1) + month_of_quarter - 1
+        super
+      end
+
       module ClassMixin
         protected
 
@@ -213,6 +240,22 @@ module TimeScales
 
       def quarter
         quarter_of_year
+      end
+
+      private
+
+      def prepare_time_struct(struct)
+        to_month =
+          (struct.month || 1) +
+          3 * (quarter_of_year - 1)
+        if to_month > 12
+          struct.year = (struct.year || 1) + 1
+          to_month -= 12
+          struct.month = to_month
+        else
+          struct.month = to_month
+        end
+        super
       end
 
       module ClassMixin
@@ -266,10 +309,6 @@ module TimeScales
         @year_of_scheme = ensure_fixnum( year )
         @month_of_year = ensure_fixnum( month )
       end
-
-      def begin_time
-        @begin_time ||= Time.new( year_of_scheme, month_of_year )
-      end
     end
 
     module HasQuarterOfSchemePrecision
@@ -296,13 +335,6 @@ module TimeScales
         @year_of_scheme = ensure_fixnum( year )
         @quarter_of_year = ensure_fixnum( quarter )
       end
-
-      def begin_time
-        @begin_time ||= begin
-          m = (quarter_of_year - 1) * 3 + 1
-          Time.new( year_of_scheme, m )
-        end
-      end
     end
 
     class YearOfScheme_Quarter_Month < SchemeRelativeFrame
@@ -315,13 +347,6 @@ module TimeScales
         @year_of_scheme = ensure_fixnum( year )
         @quarter_of_year = ensure_fixnum( quarter )
         @month_of_quarter = ensure_fixnum( month )
-      end
-
-      def begin_time
-        @begin_time ||= begin
-          m = (quarter_of_year - 1) * 3 + month_of_quarter
-          Time.new( year_of_scheme, m )
-        end
       end
     end
 
