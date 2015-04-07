@@ -82,7 +82,15 @@ module TimeScales
         end
       end
 
+      def initialize(*args)
+        _initialize args
+      end
+
       private
+
+      def _initialize(args_array)
+        #stub
+      end
 
       def ensure_fixnum(value)
         return value if Fixnum === value
@@ -135,6 +143,11 @@ module TimeScales
 
       private
 
+      def _initialize(args_array)
+        super
+        @year_of_scheme = ensure_fixnum( args_array.shift )
+      end
+
       def prepare_time_struct(struct)
         struct.year = (struct.year || 1) + year_of_scheme - 1
         super
@@ -151,10 +164,6 @@ module TimeScales
 
     class YearOfSchemeOnly < Frame::SchemeRelativeFrame
       include HasYearOfScheme
-
-      def initialize(year)
-        @year_of_scheme = ensure_fixnum( year )
-      end
 
       def succ_begin_time
         @end_time ||= Time.new( begin_time.year + 1 )
@@ -174,6 +183,11 @@ module TimeScales
 
       private
 
+      def _initialize(args_array)
+        super
+        @month_of_year = ensure_fixnum( args_array.shift )
+      end
+
       def prepare_time_struct(struct)
         struct.month = (struct.month || 1) + month_of_year - 1
         super
@@ -190,10 +204,6 @@ module TimeScales
 
     class MonthOfYearOnly < Frame::Base
       include HasMonthOfYear
-
-      def initialize(month)
-        @month_of_year = ensure_fixnum( month )
-      end
     end
 
     module HasMonthOfQuarter
@@ -208,6 +218,11 @@ module TimeScales
       end
 
       private
+
+      def _initialize(args_array)
+        super
+        @month_of_quarter = ensure_fixnum( args_array.shift )
+      end
 
       def prepare_time_struct(struct)
         struct.month = (struct.month || 1) + month_of_quarter - 1
@@ -225,10 +240,6 @@ module TimeScales
 
     class MonthOfQuarterOnly < Frame::Base
       include HasMonthOfQuarter
-
-      def initialize(month)
-        @month_of_quarter = ensure_fixnum( month )
-      end
     end
 
     module HasQuarterOfYear
@@ -243,6 +254,11 @@ module TimeScales
       end
 
       private
+
+      def _initialize(args_array)
+        super
+        @quarter_of_year = ensure_fixnum( args_array.shift )
+      end
 
       def prepare_time_struct(struct)
         to_month =
@@ -269,20 +285,11 @@ module TimeScales
 
     class QuarterOfYearOnly < Frame::Base
       include HasQuarterOfYear
-
-      def initialize(quarter)
-        @quarter_of_year = ensure_fixnum( quarter )
-      end
     end
 
     class QuarterOfYear_Month < Frame::Base
       include HasQuarterOfYear
       include HasMonthOfQuarter
-
-      def initialize(quarter, month)
-        @quarter_of_year = ensure_fixnum( quarter )
-        @month_of_quarter = ensure_fixnum( month )
-      end
     end
 
     module HasMonthOfSchemePrecision
@@ -304,11 +311,6 @@ module TimeScales
       include HasYearOfScheme
       include HasMonthOfYear
       include HasMonthOfSchemePrecision
-
-      def initialize(year, month)
-        @year_of_scheme = ensure_fixnum( year )
-        @month_of_year = ensure_fixnum( month )
-      end
     end
 
     module HasQuarterOfSchemePrecision
@@ -330,11 +332,6 @@ module TimeScales
       include HasYearOfScheme
       include HasQuarterOfYear
       include HasQuarterOfSchemePrecision
-
-      def initialize(year, quarter)
-        @year_of_scheme = ensure_fixnum( year )
-        @quarter_of_year = ensure_fixnum( quarter )
-      end
     end
 
     class YearOfScheme_Quarter_Month < SchemeRelativeFrame
@@ -342,12 +339,6 @@ module TimeScales
       include HasQuarterOfYear
       include HasMonthOfQuarter
       include HasMonthOfSchemePrecision
-
-      def initialize(year, quarter, month)
-        @year_of_scheme = ensure_fixnum( year )
-        @quarter_of_year = ensure_fixnum( quarter )
-        @month_of_quarter = ensure_fixnum( month )
-      end
     end
 
   end
