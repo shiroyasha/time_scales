@@ -20,16 +20,6 @@ module TimeScales
         @value = value
       end
 
-      def possible_parts
-        @possible_parts ||= begin
-          parts = Parts.all.select { |part| part === key }
-          if parts.empty?
-            parts = Parts.all.select { |part| part.subdivision === key }
-          end
-          parts
-        end
-      end
-
       def scale
         possible_parts.first.scale
       end
@@ -44,6 +34,18 @@ module TimeScales
         @part = possible_parts.detect { |part|
           scope.subdivision === part.scope
         }
+      end
+
+      private
+
+      def possible_parts
+        @possible_parts ||= begin
+          parts = Parts.all.select { |part| part === key }
+          if parts.empty?
+            parts = Parts.all.select { |part| part.subdivision === key }
+          end
+          parts
+        end
       end
     end
 
