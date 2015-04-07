@@ -3,6 +3,7 @@ require 'time_scales/frame/assembly_part'
 require 'time_scales/frame/base'
 require 'time_scales/frame/scheme_relative_frame'
 require 'time_scales/frame/part_components'
+require 'time_scales/frame/precisions'
 
 module TimeScales
 
@@ -34,16 +35,15 @@ module TimeScales
       klass.new( *values )
     end
 
+
     class NullFrame < Frame::Base
       include Singleton
     end
 
+
     class YearOfSchemeOnly < Frame::SchemeRelativeFrame
       include PartComponents::HasYearOfScheme
-
-      def succ_begin_time
-        @end_time ||= Time.new( begin_time.year + 1 )
-      end
+      include Precisions::HasYearOfSchemePrecision
     end
 
     class MonthOfYearOnly < Frame::Base
@@ -63,53 +63,24 @@ module TimeScales
       include PartComponents::HasMonthOfQuarter
     end
 
-    module HasMonthOfSchemePrecision
-
-      def succ_begin_time
-        @end_time ||= begin
-          succ_y = year_of_scheme
-          succ_m = begin_time.month + 1
-          if succ_m > 12
-            succ_y += 1 ; succ_m = 1
-          end
-          Time.new( succ_y, succ_m )
-        end
-      end
-
-    end
 
     class YearOfScheme_Month < SchemeRelativeFrame
       include PartComponents::HasYearOfScheme
       include PartComponents::HasMonthOfYear
-      include HasMonthOfSchemePrecision
-    end
-
-    module HasQuarterOfSchemePrecision
-
-      def succ_begin_time
-        @end_time ||= begin
-          succ_y = year_of_scheme
-          succ_m = begin_time.month + 3
-          if succ_m > 12
-            succ_y += 1 ; succ_m = 1
-          end
-          Time.new( succ_y, succ_m )
-        end
-      end
-
+      include Precisions::HasMonthOfSchemePrecision
     end
 
     class YearOfScheme_Quarter < SchemeRelativeFrame
       include PartComponents::HasYearOfScheme
       include PartComponents::HasQuarterOfYear
-      include HasQuarterOfSchemePrecision
+      include Precisions::HasQuarterOfSchemePrecision
     end
 
     class YearOfScheme_Quarter_Month < SchemeRelativeFrame
       include PartComponents::HasYearOfScheme
       include PartComponents::HasQuarterOfYear
       include PartComponents::HasMonthOfQuarter
-      include HasMonthOfSchemePrecision
+      include Precisions::HasMonthOfSchemePrecision
     end
 
   end
