@@ -1,5 +1,6 @@
 require 'time'
 require 'time_scales/frame/assembly_part'
+require 'time_scales/frame/assembly_parts'
 require 'time_scales/frame/base'
 require 'time_scales/frame/scheme_relative_frame'
 require 'time_scales/frame/part_components'
@@ -13,20 +14,16 @@ module TimeScales
       def type_for(*part_keys)
         return Frame::NullFrame if part_keys.empty?
 
-        faps = part_keys.map { |key| AssemblyPart.new(key) }
-        sequence_assembly_parts faps
-        class_for_assembly_seq( faps )
+        assembly_parts = AssemblyParts.from_key_value_map( part_keys )
+        frame_types.detect { |type| type.parts == assembly_parts.parts }
       end
 
       def [](frame_parts = {})
         return Frame::NullFrame.instance if frame_parts.keys.empty?
 
-        faps = frame_parts.map { |key,value| AssemblyPart.new(key, value) }
-        sequence_assembly_parts faps
-        klass = class_for_assembly_seq( faps )
-
-        values = faps.map { |fap| fap.value }
-        klass.new( *values )
+        assembly_parts = AssemblyParts.from_key_value_map( frame_parts )
+        klass = frame_types.detect { |type| type.parts == assembly_parts.parts }
+        klass.new( *assembly_parts.values )
       end
 
       private
@@ -38,20 +35,6 @@ module TimeScales
           select { |c_value| Class === c_value }.
           select { |c_class| c_class.ancestors.include?( Frame::Base ) }.
           reject { |frame_class| frame_class == Frame::Base }
-      end
-
-      def sequence_assembly_parts(faps)
-        faps.sort_by! { |fap| -fap.scale }
-
-        faps.first.outer_scope!
-        faps[0..-2].zip( faps[1..-1] ).each do |a,b|
-          b.component_of! a.part
-        end
-      end
-
-      def class_for_assembly_seq(faps)
-        parts = faps.map { |fap| fap.part }
-        frame_types.detect { |type| type.parts == parts }
       end
     end
 
