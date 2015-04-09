@@ -1,6 +1,6 @@
 require 'time'
-require 'time_scales/frame/assembly_part'
-require 'time_scales/frame/assembly_parts'
+require 'time_scales/frame/part_spec'
+require 'time_scales/frame/part_specs'
 require 'time_scales/frame/base'
 require 'time_scales/frame/scheme_relative_frame'
 require 'time_scales/frame/part_components'
@@ -14,19 +14,16 @@ module TimeScales
       def type_for(*part_keys)
         return Frame::NullFrame if part_keys.empty?
 
-        assembly_parts = AssemblyParts.from_key_value_map( part_keys )
-        frame_types.detect { |type| type.parts == assembly_parts.parts }
+        part_specs = PartSpecs.from_key_value_map( part_keys )
+        part_specs.to_frame_type
       end
 
       def [](frame_parts = {})
         return Frame::NullFrame.instance if frame_parts.keys.empty?
 
-        assembly_parts = AssemblyParts.from_key_value_map( frame_parts )
-        klass = frame_types.detect { |type| type.parts == assembly_parts.parts }
-        klass.new( *assembly_parts.values )
+        part_specs = PartSpecs.from_key_value_map( frame_parts )
+        part_specs.to_frame
       end
-
-      private
 
       def frame_types
         @frame_types ||=
