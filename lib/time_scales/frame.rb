@@ -17,10 +17,24 @@ module TimeScales
         reject { |frame_class| frame_class == Frame::Base }
     end
 
+    def self.type_for(*part_keys)
+      return Frame::NullFrame if part_keys.empty?
+      faps = part_keys.map { |key| AssemblyPart.new(key) }
+      faps.sort_by! { |fap| -fap.scale }
+
+      faps.first.outer_scope!
+      faps[0..-2].zip( faps[1..-1] ).each do |a,b|
+        b.component_of! a.part
+      end
+
+      parts = faps.map { |fap| fap.part }
+      frame_types.detect { |type| type.parts == parts }
+    end
+
     def self.[](frame_parts = {})
       return Frame::NullFrame.instance if frame_parts.keys.empty?
 
-      faps = frame_parts.map{ |key,value| AssemblyPart.new( key, value ) }
+      faps = frame_parts.map { |key,value| AssemblyPart.new(key, value) }
       faps.sort_by! { |fap| -fap.scale }
 
       faps.first.outer_scope!

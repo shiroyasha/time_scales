@@ -1,6 +1,108 @@
 require 'spec_helper'
 
 describe TimeScales::Frame do
+  describe '::type_for' do
+    it "returns appropriate type for a year-of-scheme key" do
+      expected_parts = [
+        TimeScales::Parts::YearOfScheme
+      ]
+
+      expect(
+        subject.type_for( TimeScales::Parts::YearOfScheme ).parts
+      ).to eq( expected_parts )
+
+      expect(
+        subject.type_for( :year_of_scheme ).parts
+      ).to eq( expected_parts )
+
+      expect(
+        subject.type_for( :year ).parts
+      ).to eq( expected_parts )
+    end
+
+    it "returns appropriate type for a month-of-year identifier" do
+      expected_parts = [
+        TimeScales::Parts::MonthOfYear
+      ]
+
+      expect(
+        subject.type_for( TimeScales::Parts::MonthOfYear ).parts
+      ).to eq( expected_parts )
+
+      expect(
+        subject.type_for( :month_of_year ).parts
+      ).to eq( expected_parts )
+
+      expect(
+        subject.type_for( :month ).parts
+      ).to eq( expected_parts )
+    end
+
+    it "returns appropriate type for a year-of-scheme / month identifiers" do
+      expected_parts = [
+        TimeScales::Parts::YearOfScheme,
+        TimeScales::Parts::MonthOfYear,
+      ]
+
+      expect(
+        subject.type_for(
+          TimeScales::Parts::YearOfScheme,
+          TimeScales::Parts::MonthOfYear,
+        ).parts
+      ).to eq( expected_parts )
+
+      expect(
+        subject.type_for( :year_of_scheme, :month ).parts
+      ).to eq( expected_parts )
+
+      expect(
+        subject.type_for( :year, :month_of_year ).parts
+      ).to eq( expected_parts )
+    end
+
+    it "returns appropriate type for a quarter-of-year identifier" do
+      expected_parts = [
+        TimeScales::Parts::QuarterOfYear
+      ]
+
+      expect(
+        subject.type_for( TimeScales::Parts::QuarterOfYear ).parts
+      ).to eq( expected_parts )
+
+      expect(
+        subject.type_for( :quarter_of_year ).parts
+      ).to eq( expected_parts )
+
+      expect(
+        subject.type_for( :quarter ).parts
+      ).to eq( expected_parts )
+    end
+
+    it "returns appropriate type for a year-of-scheme / quarter / month identifiers" do
+      expected_parts = [
+        TimeScales::Parts::YearOfScheme,
+        TimeScales::Parts::QuarterOfYear,
+        TimeScales::Parts::MonthOfQuarter,
+      ]
+
+      expect(
+        subject.type_for(
+          TimeScales::Parts::YearOfScheme,
+          TimeScales::Parts::QuarterOfYear,
+          TimeScales::Parts::MonthOfQuarter,
+        ).parts
+      ).to eq( expected_parts )
+
+      expect(
+        subject.type_for( :year_of_scheme, :quarter_of_year, :month ).parts
+      ).to eq( expected_parts )
+
+      expect(
+        subject.type_for( :year, :quarter, :month_of_quarter ).parts
+      ).to eq( expected_parts )
+    end
+  end
+
   context "an instance with no parts" do
     subject { described_class[] }
 

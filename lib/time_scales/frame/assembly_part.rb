@@ -4,7 +4,7 @@ module TimeScales
     class AssemblyPart
       attr_reader :key, :value, :part
 
-      def initialize(key, value)
+      def initialize(key, value=nil)
         @key   = key
         @value = value
       end
