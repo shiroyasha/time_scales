@@ -15,14 +15,14 @@ module TimeScales
         return Frame::NullFrame if part_keys.empty?
 
         part_specs = PartSpecs.from_key_value_map( part_keys )
-        part_specs.to_frame_type
+        type_for_part_specs( part_specs )
       end
 
       def [](frame_parts = {})
         return Frame::NullFrame.instance if frame_parts.keys.empty?
 
         part_specs = PartSpecs.from_key_value_map( frame_parts )
-        part_specs.to_frame
+        instance_for_part_specs( part_specs )
       end
 
       def frame_types
@@ -33,6 +33,16 @@ module TimeScales
           select { |c_class| c_class.ancestors.include?( Frame::Base ) }.
           reject { |frame_class| frame_class == Frame::Base }
       end
+
+      def type_for_part_specs(specs)
+        frame_types.detect { |type| type.parts == specs.parts }
+      end
+
+      def instance_for_part_specs(specs)
+        type = type_for_part_specs( specs )
+        type.new( *specs.part_values )
+      end
+
     end
 
 

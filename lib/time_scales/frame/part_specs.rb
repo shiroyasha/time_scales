@@ -23,19 +23,11 @@ module TimeScales
         @part_specs = part_specs
       end
 
-      def to_frame_type
-        Frame.frame_types.detect { |type| type.parts == parts }
-      end
-
-      def to_frame
-        to_frame_type.new( *values )
-      end
-
       def parts
         @parts ||= assembly_sequence.map { |ps| ps.part }
       end
 
-      def values
+      def part_values
         assembly_sequence.map { |ps| ps.value }
       end
 
