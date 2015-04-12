@@ -2,6 +2,7 @@ require 'time'
 require 'time_scales/frame/part_spec'
 require 'time_scales/frame/part_specs'
 require 'time_scales/frame/base'
+require 'time_scales/frame/null_frame'
 require 'time_scales/frame/scheme_relative_frame'
 require 'time_scales/frame/part_components'
 require 'time_scales/frame/precisions'
@@ -15,7 +16,7 @@ module TimeScales
         return Frame::NullFrame if part_keys.empty?
 
         part_specs = PartSpecs.from_key_value_map( part_keys )
-        type_for_part_specs( part_specs )
+        type_for_parts( part_specs.parts )
       end
 
       def [](frame_parts = {})
@@ -34,74 +35,45 @@ module TimeScales
           reject { |frame_class| frame_class == Frame::Base }
       end
 
-      def type_for_part_specs(specs)
-        frame_types.detect { |type| type.parts == specs.parts }
+      def type_for_parts(parts)
+        return Frame::NullFrame if parts.empty?
+        type_cache.fetch(parts) {
+          type_cache[parts] = build_type_for_parts(parts)
+        }
       end
 
       def instance_for_part_specs(specs)
-        type = type_for_part_specs( specs )
+        type = type_for_parts( specs.parts )
         type.new( *specs.part_values )
+      end
+
+      private
+
+      def type_cache
+        @type_cache ||= {}
+      end
+
+      def build_type_for_parts(parts)
+        is_scheme_scoped = parts.first.scope == Units::Scheme
+        base = is_scheme_scoped ?
+          Frame::SchemeRelativeFrame :
+          Frame::Base
+        klass = Class.new base do
+          parts.each do |part| ; include part.component_mixin ; end
+          include parts.last.scheme_scoped_precision_mixin if is_scheme_scoped
+        end
+        const_name = "#{parts.first.name}"
+        parts[1..-1].each do |part| ; const_name << "_#{part.subdivision_name}" ; end
+        const_name << 'Only' if parts.length == 1
+        const_name << '__Auto'
+        const_set const_name, klass
+        klass
       end
 
     end
 
-
     class NullFrame < Frame::Base
       include Singleton
-    end
-
-
-    class YearOfSchemeOnly < Frame::SchemeRelativeFrame
-      include PartComponents::HasYearOfScheme
-      include Precisions::HasYearOfSchemePrecision
-    end
-
-    class MonthOfYearOnly < Frame::Base
-      include PartComponents::HasMonthOfYear
-    end
-
-    class MonthOfQuarterOnly < Frame::Base
-      include PartComponents::HasMonthOfQuarter
-    end
-
-    class QuarterOfYearOnly < Frame::Base
-      include PartComponents::HasQuarterOfYear
-    end
-
-    class DayOfMonthOnly < Frame::Base
-      include PartComponents::HasDayOfMonth
-    end
-
-    class QuarterOfYear_Month < Frame::Base
-      include PartComponents::HasQuarterOfYear
-      include PartComponents::HasMonthOfQuarter
-    end
-
-
-    class YearOfScheme_Month < SchemeRelativeFrame
-      include PartComponents::HasYearOfScheme
-      include PartComponents::HasMonthOfYear
-      include Precisions::HasMonthOfSchemePrecision
-    end
-
-    class YearOfScheme_Month_Day < SchemeRelativeFrame
-      include PartComponents::HasYearOfScheme
-      include PartComponents::HasMonthOfYear
-      include PartComponents::HasDayOfMonth
-      include Precisions::HasDayOfSchemePrecision
-    end
-
-    class YearOfScheme_Quarter < SchemeRelativeFrame
-      include PartComponents::HasYearOfScheme
-      include PartComponents::HasQuarterOfYear
-      include Precisions::HasQuarterOfSchemePrecision
-    end
-
-    class YearOfScheme_Quarter_Month < SchemeRelativeFrame
-      include PartComponents::HasYearOfScheme
-      include PartComponents::HasQuarterOfYear
-      include PartComponents::HasMonthOfQuarter
-      include Precisions::HasMonthOfSchemePrecision
     end
 
   end

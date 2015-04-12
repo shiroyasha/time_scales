@@ -17,6 +17,10 @@ module TimeScales
       def scale
         raise NotImplementedError, "Subclass responsibility"
       end
+
+      def name
+        @name ||= /::([^:]+)Class$/.match( self.class.name )[1]
+      end
     end
 
     class SchemeClass < AbstractUnit

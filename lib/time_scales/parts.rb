@@ -40,6 +40,22 @@ module TimeScales
       def to_s
         @to_s ||= self.class.name.sub(/Class$/, '').freeze
       end
+
+      def component_mixin
+        raise NotImplementedError, "Subclass responsibility"
+      end
+
+      def scheme_scoped_precision_mixin
+        raise NotImplementedError, "Subclass responsibility"
+      end
+
+      def name
+        @name ||= /::([^:]+)Class$/.match( self.class.name )[1]
+      end
+
+      def subdivision_name
+        subdivision.name
+      end
     end
 
     class YearOfSchemeClass < AbstractPart
@@ -49,6 +65,8 @@ module TimeScales
       def subdivision ; Units::Year   ; end
       def scope       ; Units::Scheme ; end
       def default_for_unit? ; true    ; end
+      def component_mixin ; Frame::PartComponents::HasYearOfScheme ; end
+      def scheme_scoped_precision_mixin ; Frame::Precisions::HasYearOfSchemePrecision ; end
     end
 
     YearOfScheme = YearOfSchemeClass.instance
@@ -61,6 +79,8 @@ module TimeScales
       def subdivision ; Units::Quarter ; end
       def scope       ; Units::Year    ; end
       def default_for_unit? ; true ; end
+      def component_mixin ; Frame::PartComponents::HasQuarterOfYear ; end
+      def scheme_scoped_precision_mixin ; Frame::Precisions::HasQuarterOfSchemePrecision ; end
     end
 
     QuarterOfYear = QuarterOfYearClass.instance
@@ -73,6 +93,8 @@ module TimeScales
       def subdivision ; Units::Month ; end
       def scope       ; Units::Year  ; end
       def default_for_unit? ; true ; end
+      def component_mixin ; Frame::PartComponents::HasMonthOfYear ; end
+      def scheme_scoped_precision_mixin ; Frame::Precisions::HasMonthOfSchemePrecision ; end
     end
 
     MonthOfYear = MonthOfYearClass.instance
@@ -85,6 +107,8 @@ module TimeScales
       def subdivision ; Units::Month   ; end
       def scope       ; Units::Quarter ; end
       def default_for_unit? ; false    ; end
+      def component_mixin ; Frame::PartComponents::HasMonthOfQuarter ; end
+      def scheme_scoped_precision_mixin ; Frame::Precisions::HasMonthOfSchemePrecision ; end
     end
 
     MonthOfQuarter = MonthOfQuarterClass.instance
@@ -97,6 +121,8 @@ module TimeScales
       def subdivision ; Units::Day   ; end
       def scope       ; Units::Month ; end
       def default_for_unit? ; true ; end
+      def component_mixin ; Frame::PartComponents::HasDayOfMonth ; end
+      def scheme_scoped_precision_mixin ; Frame::Precisions::HasDayOfSchemePrecision ; end
     end
 
     DayOfMonth = DayOfMonthClass.instance
