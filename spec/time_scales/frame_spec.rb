@@ -295,6 +295,49 @@ module TimeScales
       end
     end
 
+    context "an instance for a specific year, month, and day" do
+      subject           { described_class[year: 2001, month: 10, day: 20] }
+      let( :subject_2 ) { described_class[year: 2015, month: 12, day: 31] }
+
+      it "exposes its year through its #year_of_scheme property" do
+        expect( subject.year_of_scheme ).to eq( 2001 )
+      end
+
+      it "exposes its year through its #year property" do
+        expect( subject.year ).to eq( 2001 )
+      end
+
+      it "exposes its month through its #month_of_year property" do
+        expect( subject.month_of_year ).to eq( 10 )
+      end
+
+      it "exposes its month through its #month property" do
+        expect( subject.month ).to eq( 10 )
+      end
+
+      it "exposes its day through its #day_of_month property" do
+        expect( subject.day_of_month ).to eq( 20 )
+      end
+
+      it "exposes its day through its #day property" do
+        expect( subject.day ).to eq( 20 )
+      end
+
+      it "is convertible to the time at the start of the day" do
+        expect( subject.to_time ).to eq( Time.new(2001, 10, 20, 0, 0, 0) )
+      end
+
+      it "is convertible to range from day start until (but not including) next day start" do
+        frame_start      = Time.new(2001, 10, 20, 0, 0, 0)
+        next_frame_start = Time.new(2001, 10, 21, 0, 0, 0)
+        expect( subject.to_range ).to eq( frame_start...next_frame_start )
+
+        frame_start      = Time.new(2015, 12, 31, 0, 0, 0)
+        next_frame_start = Time.new(2016,  1,  1, 0, 0, 0)
+        expect( subject_2.to_range ).to eq( frame_start...next_frame_start )
+      end
+    end
+
     context "an instance for a specific quarter and month (of quarter)" do
       subject           { described_class[quarter: 2, month:            3] }
       let( :subject_2 ) { described_class[quarter: 4, month_of_quarter: 2] }

@@ -84,6 +84,13 @@ module TimeScales
       include Precisions::HasMonthOfSchemePrecision
     end
 
+    class YearOfScheme_Month_Day < SchemeRelativeFrame
+      include PartComponents::HasYearOfScheme
+      include PartComponents::HasMonthOfYear
+      include PartComponents::HasDayOfMonth
+      include Precisions::HasDayOfSchemePrecision
+    end
+
     class YearOfScheme_Quarter < SchemeRelativeFrame
       include PartComponents::HasYearOfScheme
       include PartComponents::HasQuarterOfYear

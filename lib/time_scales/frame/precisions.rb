@@ -50,6 +50,17 @@ module TimeScales
         end
       end
 
+      module HasDayOfSchemePrecision
+        # Gets us to the early part of the next day, regardless
+        # of DST handling, leap seconds, etc.
+        SECOONDS_IN_26_HOURS = 60 * 60 * 26
+
+        def succ_begin_time
+          t = begin_time + SECOONDS_IN_26_HOURS
+          @end_time ||= Time.new(t.year, t.month, t.day)
+        end
+      end
+
     end
 
   end
