@@ -68,6 +68,10 @@ module TimeScales
       include PartComponents::HasQuarterOfYear
     end
 
+    class DayOfMonthOnly < Frame::Base
+      include PartComponents::HasDayOfMonth
+    end
+
     class QuarterOfYear_Month < Frame::Base
       include PartComponents::HasQuarterOfYear
       include PartComponents::HasMonthOfQuarter

@@ -53,11 +53,20 @@ module TimeScales
       include Singleton
 
       def symbol ; :month ; end
-      def scale  ;  30      ; end
+      def scale  ;  30    ; end
     end
 
     Month = MonthClass.instance
 
+
+    class DayClass < AbstractUnit
+      include Singleton
+
+      def symbol ; :day ; end
+      def scale  ;  23  ; end
+    end
+
+    Day = DayClass.instance
 
   end
 

@@ -91,6 +91,22 @@ module TimeScales
           subject.type_for( :year, :quarter, :month_of_quarter ).parts
         ).to eq( expected_parts )
       end
+
+      it "returns appropriate type for a day-of-month identifier" do
+        expected_parts = [ Parts::DayOfMonth ]
+
+        expect(
+          subject.type_for( Parts::DayOfMonth ).parts
+        ).to eq( expected_parts )
+
+        expect(
+          subject.type_for( :day_of_month ).parts
+        ).to eq( expected_parts )
+
+        expect(
+          subject.type_for( :day ).parts
+        ).to eq( expected_parts )
+      end
     end
 
     context "an instance with no parts" do

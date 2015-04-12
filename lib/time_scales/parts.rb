@@ -8,6 +8,7 @@ module TimeScales
         QuarterOfYear,
         MonthOfYear,
         MonthOfQuarter,
+        DayOfMonth,
       ].freeze
     end
 
@@ -59,7 +60,7 @@ module TimeScales
       def symbol ; :quarter_of_year ; end
       def subdivision ; Units::Quarter ; end
       def scope       ; Units::Year    ; end
-      def default_for_unit? ; true    ; end
+      def default_for_unit? ; true ; end
     end
 
     QuarterOfYear = QuarterOfYearClass.instance
@@ -71,7 +72,7 @@ module TimeScales
       def symbol ; :month_of_year ; end
       def subdivision ; Units::Month ; end
       def scope       ; Units::Year  ; end
-      def default_for_unit? ; true    ; end
+      def default_for_unit? ; true ; end
     end
 
     MonthOfYear = MonthOfYearClass.instance
@@ -87,6 +88,18 @@ module TimeScales
     end
 
     MonthOfQuarter = MonthOfQuarterClass.instance
+
+
+    class DayOfMonthClass < AbstractPart
+      include Singleton
+
+      def symbol ; :day_of_month  ; end
+      def subdivision ; Units::Day   ; end
+      def scope       ; Units::Month ; end
+      def default_for_unit? ; true ; end
+    end
+
+    DayOfMonth = DayOfMonthClass.instance
 
   end
 

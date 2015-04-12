@@ -67,6 +67,38 @@ module TimeScales
         end
       end
 
+      module HasDayOfMonth
+        def self.included(other)
+          other.extend HasDayOfMonth::ClassMixin
+        end
+
+        attr_reader :day_of_month
+
+        def day
+          day_of_month
+        end
+
+        private
+
+        def _initialize(args_array)
+          super
+          @day_of_month = ensure_fixnum( args_array.shift )
+        end
+
+        def prepare_time_struct(struct)
+          struct.day = (struct.month || 1) + day_of_month - 1
+          super
+        end
+
+        module ClassMixin
+          protected
+
+          def _parts
+            super << Parts::DayOfMonth
+          end
+        end
+      end
+
       module HasMonthOfQuarter
         def self.included(other)
           other.extend HasMonthOfQuarter::ClassMixin
