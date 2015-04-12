@@ -6,6 +6,7 @@ require 'time_scales/frame/null_frame'
 require 'time_scales/frame/scheme_relative_frame'
 require 'time_scales/frame/part_components'
 require 'time_scales/frame/precisions'
+require 'time_scales/frame/type_builder'
 
 module TimeScales
 
@@ -38,7 +39,8 @@ module TimeScales
       def type_for_parts(parts)
         return Frame::NullFrame if parts.empty?
         type_cache.fetch(parts) {
-          type_cache[parts] = build_type_for_parts(parts)
+          builder = TypeBuilder.new(parts)
+          type_cache[parts] = builder.call
         }
       end
 
@@ -52,24 +54,6 @@ module TimeScales
       def type_cache
         @type_cache ||= {}
       end
-
-      def build_type_for_parts(parts)
-        is_scheme_scoped = parts.first.scope == Units::Scheme
-        base = is_scheme_scoped ?
-          Frame::SchemeRelativeFrame :
-          Frame::Base
-        klass = Class.new base do
-          parts.each do |part| ; include part.component_mixin ; end
-          include parts.last.scheme_scoped_precision_mixin if is_scheme_scoped
-        end
-        const_name = "#{parts.first.name}"
-        parts[1..-1].each do |part| ; const_name << "_#{part.subdivision_name}" ; end
-        const_name << 'Only' if parts.length == 1
-        const_name << '__Auto'
-        const_set const_name, klass
-        klass
-      end
-
     end
 
     class NullFrame < Frame::Base
