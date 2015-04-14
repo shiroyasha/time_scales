@@ -22,6 +22,15 @@ module TimeScales
         _initialize args
       end
 
+      def parts
+        @parts ||= Hash[
+          self.class.parts.map { |part|
+            [ part.symbol, send(part.symbol) ]
+          }
+        ]
+        @parts.dup
+      end
+
       private
 
       def _initialize(args_array)

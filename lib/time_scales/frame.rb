@@ -27,32 +27,17 @@ module TimeScales
         instance_for_part_specs( part_specs )
       end
 
-      def frame_types
-        @frame_types ||=
-          constants.
-          map { |c_name| const_get(c_name) }.
-          select { |c_value| Class === c_value }.
-          select { |c_class| c_class.ancestors.include?( Frame::Base ) }.
-          reject { |frame_class| frame_class == Frame::Base }
-      end
+      private
 
       def type_for_parts(parts)
         return Frame::NullFrame if parts.empty?
-        type_cache.fetch(parts) {
-          builder = TypeBuilder.new(parts)
-          type_cache[parts] = builder.call
-        }
+        builder = TypeBuilder.new(parts)
+        builder.call
       end
 
       def instance_for_part_specs(specs)
         type = type_for_parts( specs.parts )
         type.new( *specs.part_values )
-      end
-
-      private
-
-      def type_cache
-        @type_cache ||= {}
       end
     end
 

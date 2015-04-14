@@ -4,424 +4,211 @@ module TimeScales
 
   describe Frame do
     describe '::type_for' do
-      it "returns appropriate type for a year-of-scheme key" do
-        expected_parts = [ Parts::YearOfScheme ]
-
-        expect(
-          subject.type_for( Parts::YearOfScheme ).parts
-        ).to eq( expected_parts )
-
-        expect(
-          subject.type_for( :year_of_scheme ).parts
-        ).to eq( expected_parts )
-
-        expect(
-          subject.type_for( :year ).parts
-        ).to eq( expected_parts )
-      end
-
-      it "returns appropriate type for a month-of-year identifier" do
-        expected_parts = [ Parts::MonthOfYear ]
-
-        expect(
-          subject.type_for( Parts::MonthOfYear ).parts
-        ).to eq( expected_parts )
-
-        expect(
-          subject.type_for( :month_of_year ).parts
-        ).to eq( expected_parts )
-
-        expect(
-          subject.type_for( :month ).parts
-        ).to eq( expected_parts )
-      end
-
-      it "returns appropriate type for a year-of-scheme / month identifiers" do
-        expected_parts = [ Parts::YearOfScheme, Parts::MonthOfYear ]
-
-        expect(
-          subject.type_for( Parts::YearOfScheme, Parts::MonthOfYear ).parts
-        ).to eq( expected_parts )
-
-        expect(
-          subject.type_for( :year_of_scheme, :month ).parts
-        ).to eq( expected_parts )
-
-        expect(
-          subject.type_for( :year, :month_of_year ).parts
-        ).to eq( expected_parts )
-      end
-
-      it "returns appropriate type for a quarter-of-year identifier" do
-        expected_parts = [ Parts::QuarterOfYear ]
-
-        expect(
-          subject.type_for( Parts::QuarterOfYear ).parts
-        ).to eq( expected_parts )
-
-        expect(
-          subject.type_for( :quarter_of_year ).parts
-        ).to eq( expected_parts )
-
-        expect(
-          subject.type_for( :quarter ).parts
-        ).to eq( expected_parts )
-      end
-
-      it "returns appropriate type for a year-of-scheme / quarter / month identifiers" do
-        expected_parts = [
-          Parts::YearOfScheme,
+      it "builds a type for a list of part keys in arbitrary order" do
+        type = described_class.type_for(
+          Units::Day,
+          :quarter,
+          Parts::MonthOfQuarter,
+        )
+        expect( type.parts ).to eq( [
           Parts::QuarterOfYear,
           Parts::MonthOfQuarter,
+          Parts::DayOfMonth
+        ] )
+      end
+    end
+
+    describe '::[]' do
+      it "builds an instance for a hash of values by part-key" do
+        frame = described_class[
+          Parts::YearOfScheme => 2012,
+          Units::Month => 9,
+          :day_of_month => 24
         ]
-
-        expect(
-          subject.type_for(
-            Parts::YearOfScheme,
-            Parts::QuarterOfYear,
-            Parts::MonthOfQuarter,
-          ).parts
-        ).to eq( expected_parts )
-
-        expect(
-          subject.type_for( :year_of_scheme, :quarter_of_year, :month ).parts
-        ).to eq( expected_parts )
-
-        expect(
-          subject.type_for( :year, :quarter, :month_of_quarter ).parts
-        ).to eq( expected_parts )
-      end
-
-      it "returns appropriate type for a day-of-month identifier" do
-        expected_parts = [ Parts::DayOfMonth ]
-
-        expect(
-          subject.type_for( Parts::DayOfMonth ).parts
-        ).to eq( expected_parts )
-
-        expect(
-          subject.type_for( :day_of_month ).parts
-        ).to eq( expected_parts )
-
-        expect(
-          subject.type_for( :day ).parts
-        ).to eq( expected_parts )
+        expect( frame.parts ).to eq( {
+          year_of_scheme: 2012,
+          month_of_year: 9,
+          day_of_month: 24
+        } )
       end
     end
 
-    context "an instance with no parts" do
-      subject { described_class[] }
+    context "with a year-of-scheme part" do
+      let( :type ) {
+        described_class.type_for( :year_of_scheme )
+      }
 
-      it "has no year-part attributes" do
-        expect( subject ).not_to respond_to( :year )
-        expect( subject.methods.grep( /^year_of/ ) ). to be_empty
+      it "rejects construction with a non-Fixnum year value" do
+        expect{ type.new( '2014'  ) }.to raise_error( ArgumentError )
+        expect{ type.new(  2014.0 ) }.to raise_error( ArgumentError )
+        expect{ type.new(  nil    ) }.to raise_error( ArgumentError )
       end
 
-      it "has no month-part attributes" do
-        expect( subject ).not_to respond_to( :month )
-        expect( subject.methods.grep( /^month_of/ ) ). to be_empty
-      end
-
-      it "has no quarter-part attributes" do
-        expect( subject ).not_to respond_to( :quarter )
-        expect( subject.methods.grep( /^quarter_of/ ) ). to be_empty
+      it "exposes its year value as #year_of_scheme and #year" do
+        frame = type.new( 2014 )
+        expect( frame.year_of_scheme ).to eq( 2014 )
+        expect( frame.year           ).to eq( 2014 )
       end
     end
 
-    it "rejects construction with a non-Fixnum year value" do
-      expect{ described_class[year: '2010'] }.to raise_error( ArgumentError )
-      expect{ described_class[year: 2010.0] }.to raise_error( ArgumentError )
-      expect{ described_class[year: nil]    }.to raise_error( ArgumentError )
-    end
-
-    context "an instance for a specific year" do
-      subject { described_class[year: 2014] }
-
-      it "exposes its year through its #year_of_scheme property" do
-        expect( subject.year_of_scheme ).to eq( 2014 )
-      end
-
-      it "exposes its year through its #year property" do
-        expect( subject.year ).to eq( 2014 )
-      end
+    context "with a scope of Scheme and a precision of Year" do
+      let( :frame ) {
+        described_class[ year_of_scheme: 2013 ]
+      }
 
       it "is convertible to the time at the start of the year" do
-        expect( subject.to_time ).to eq( Time.new(2014, 1, 1, 0, 0, 0) )
+        expect( frame.to_time ).to eq( Time.new(2013, 1, 1, 0, 0, 0) )
       end
 
       it "is convertible to range from year start until (but not including) next year start" do
-        frame_start      = Time.new(2014, 1, 1, 0, 0, 0)
-        next_frame_start = Time.new(2015, 1, 1, 0, 0, 0)
-        expect( subject.to_range ).to eq( frame_start...next_frame_start )
+        frame_start      = Time.new(2013, 1, 1, 0, 0, 0)
+        next_frame_start = Time.new(2014, 1, 1, 0, 0, 0)
+        expect( frame.to_range ).to eq( frame_start...next_frame_start )
       end
     end
 
-    it "rejects construction with a non-Fixnum month value" do
-      expect{ described_class[month: '10'] }.to raise_error( ArgumentError )
-      expect{ described_class[month: 11.0] }.to raise_error( ArgumentError )
-      expect{ described_class[month: nil]  }.to raise_error( ArgumentError )
-    end
+    context "with a quarter-of-year part" do
+      let( :type ) {
+        described_class.type_for( :quarter_of_year )
+      }
 
-    context "an instance for a specific month" do
-      subject { described_class[month: 11] }
-
-      it "exposes its month through its #month_of_year property" do
-        expect( subject.month_of_year ).to eq( 11 )
+      it "rejects construction with a non-Fixnum quarter value" do
+        expect{ type.new( '3'  ) }.to raise_error( ArgumentError )
+        expect{ type.new(  3.0 ) }.to raise_error( ArgumentError )
+        expect{ type.new(  nil ) }.to raise_error( ArgumentError )
       end
 
-      it "exposes its month through its #month property" do
-        expect( subject.month ).to eq( 11 )
-      end
-
-      it "is not convertible to a time or a range" do
-        expect( subject ).not_to respond_to( :to_time )
-        expect( subject ).not_to respond_to( :to_range )
+      it "exposes its month as #quarter_of_year and #quarter" do
+        frame = type.new( 2 )
+        expect( frame.quarter_of_year ).to eq( 2 )
+        expect( frame.quarter         ).to eq( 2 )
       end
     end
 
-    it "rejects construction with a non-Fixnum quarter value" do
-      expect{ described_class[quarter: '3'] }.to raise_error( ArgumentError )
-      expect{ described_class[quarter: 4.0] }.to raise_error( ArgumentError )
-      expect{ described_class[quarter: nil] }.to raise_error( ArgumentError )
-    end
-
-    context "an instance for a specific quarter" do
-      subject { described_class[quarter: 3] }
-
-      it "exposes its quarter through its #quarter_of_year property" do
-        expect( subject.quarter_of_year ).to eq( 3 )
-      end
-
-      it "exposes its quarter through its #quarter property" do
-        expect( subject.quarter ).to eq( 3 )
-      end
-
-      it "is not convertible to a time or a range" do
-        expect( subject ).not_to respond_to( :to_time )
-        expect( subject ).not_to respond_to( :to_range )
-      end
-    end
-
-    it "rejects construction with a non-Fixnum month_of_quarter value" do
-      expect{ described_class[month_of_quarter: '3'] }.to raise_error( ArgumentError )
-      expect{ described_class[month_of_quarter: 2.0] }.to raise_error( ArgumentError )
-      expect{ described_class[month_of_quarter: nil] }.to raise_error( ArgumentError )
-    end
-
-    context "an instance for a specific month of quarter" do
-      subject { described_class[month_of_quarter: 2] }
-
-      it "exposes its quarter through its #month_of_quarter property" do
-        expect( subject.month_of_quarter ).to eq( 2 )
-      end
-
-      it "exposes its quarter through its #month property" do
-        expect( subject.month ).to eq( 2 )
-      end
-
-      it "is not convertible to a time or a range" do
-        expect( subject ).not_to respond_to( :to_time )
-        expect( subject ).not_to respond_to( :to_range )
-      end
-    end
-
-    context "an instance for a specific year and quarter" do
-      subject           { described_class[year: 1998, quarter: 3] }
-      let( :subject_2 ) { described_class[year: 2010, quarter: 4] }
-
-      it "exposes its year through its #year_of_scheme property" do
-        expect( subject.year_of_scheme ).to eq( 1998 )
-      end
-
-      it "exposes its year through its #year property" do
-        expect( subject.year ).to eq( 1998 )
-      end
-
-      it "exposes its quarter through its #quarter_of_year property" do
-        expect( subject.quarter_of_year ).to eq( 3 )
-      end
-
-      it "exposes its quarter through its #quarter property" do
-        expect( subject.quarter ).to eq( 3 )
-      end
+    context "with a scope of scheme and a precision of quarter" do
+      let( :frame_a ) {
+        described_class[ year_of_scheme: 2013, quarter_of_year: 2 ]
+      }
+      let( :frame_b ) {
+        described_class[ year_of_scheme: 2011, quarter_of_year: 4 ]
+      }
 
       it "is convertible to the time at the start of the quarter" do
-        expect( subject.to_time ).to eq( Time.new(1998, 7, 1, 0, 0, 0) )
+        expect( frame_a.to_time ).to eq( Time.new(2013, 4, 1, 0, 0, 0) )
       end
 
-      it "is convertible to range from month start until (but not including) next month start" do
-        frame_start      = Time.new(1998, 7, 1, 0, 0, 0)
-        next_frame_start = Time.new(1998, 10, 1, 0, 0, 0)
-        expect( subject.to_range ).to eq( frame_start...next_frame_start )
+      it "is convertible to range from year start until (but not including) next year start" do
+        frame_a_start      = Time.new(2013, 4, 1, 0, 0, 0)
+        frame_a_next_start = Time.new(2013, 7, 1, 0, 0, 0)
+        expect( frame_a.to_range ).to eq( frame_a_start...frame_a_next_start )
 
-        frame_start      = Time.new(2010, 10, 1, 0, 0, 0)
-        next_frame_start = Time.new(2011,  1, 1, 0, 0, 0)
-        expect( subject_2.to_range ).to eq( frame_start...next_frame_start )
+        frame_b_start      = Time.new(2011, 10, 1, 0, 0, 0)
+        frame_b_next_start = Time.new(2012,  1, 1, 0, 0, 0)
+        expect( frame_b.to_range ).to eq( frame_b_start...frame_b_next_start )
       end
     end
 
-    context "an instance for a specific year and month" do
-      subject           { described_class[year: 2001, month: 10] }
-      let( :subject_2 ) { described_class[year: 2015, month: 12] }
+    context "with a month-of-year part" do
+      let( :type ) {
+        described_class.type_for( :month_of_year )
+      }
 
-      it "exposes its year through its #year_of_scheme property" do
-        expect( subject.year_of_scheme ).to eq( 2001 )
+      it "rejects construction with a non-Fixnum month value" do
+        expect{ type.new( '11'  ) }.to raise_error( ArgumentError )
+        expect{ type.new(  11.0 ) }.to raise_error( ArgumentError )
+        expect{ type.new(  nil  ) }.to raise_error( ArgumentError )
       end
 
-      it "exposes its year through its #year property" do
-        expect( subject.year ).to eq( 2001 )
+      it "exposes its year month as #month_of_year and #month" do
+        frame = type.new( 9 )
+        expect( frame.month_of_year ).to eq( 9 )
+        expect( frame.month         ).to eq( 9 )
+      end
+    end
+
+    context "with a month-of-quarter part" do
+      let( :type ) {
+        described_class.type_for( :month_of_quarter )
+      }
+
+      it "rejects construction with a non-Fixnum month value" do
+        expect{ type.new( '3'  ) }.to raise_error( ArgumentError )
+        expect{ type.new(  3.0 ) }.to raise_error( ArgumentError )
+        expect{ type.new(  nil ) }.to raise_error( ArgumentError )
       end
 
-      it "exposes its month through its #month_of_year property" do
-        expect( subject.month_of_year ).to eq( 10 )
+      it "exposes its month as #month_of_quarter and #month" do
+        frame = type.new( 2 )
+        expect( frame.month_of_quarter ).to eq( 2 )
+        expect( frame.month            ).to eq( 2 )
       end
+    end
 
-      it "exposes its month through its #month property" do
-        expect( subject.month ).to eq( 10 )
-      end
+    context "with a scope of Scheme and a precision of Month" do
+      let( :frame_a ) {
+        described_class[ year_of_scheme: 2013, month_of_year: 10 ]
+      }
+      let( :frame_b ) {
+        described_class[ year_of_scheme: 2015, quarter: 4, month_of_quarter: 3 ]
+      }
 
       it "is convertible to the time at the start of the month" do
-        expect( subject.to_time ).to eq( Time.new(2001, 10, 1, 0, 0, 0) )
+        expect( frame_a.to_time ).to eq( Time.new(2013, 10, 1, 0, 0, 0) )
+        expect( frame_b.to_time ).to eq( Time.new(2015, 12, 1, 0, 0, 0) )
       end
 
-      it "is convertible to range from month start until (but not including) next month start" do
-        frame_start      = Time.new(2001, 10, 1, 0, 0, 0)
-        next_frame_start = Time.new(2001, 11, 1, 0, 0, 0)
-        expect( subject.to_range ).to eq( frame_start...next_frame_start )
+      it "is convertible to range from year start until (but not including) next year start" do
+        frame_a_start      = Time.new(2013, 10, 1, 0, 0, 0)
+        frame_a_next_start = Time.new(2013, 11, 1, 0, 0, 0)
+        expect( frame_a.to_range ).to eq( frame_a_start...frame_a_next_start )
 
-        frame_start      = Time.new(2015, 12, 1, 0, 0, 0)
-        next_frame_start = Time.new(2016,  1, 1, 0, 0, 0)
-        expect( subject_2.to_range ).to eq( frame_start...next_frame_start )
+        frame_b_start      = Time.new(2015, 12, 1, 0, 0, 0)
+        frame_b_next_start = Time.new(2016,  1, 1, 0, 0, 0)
+        expect( frame_b.to_range ).to eq( frame_b_start...frame_b_next_start )
       end
     end
 
-    context "an instance for a specific year, month, and day" do
-      subject           { described_class[year: 2001, month: 10, day: 20] }
-      let( :subject_2 ) { described_class[year: 2015, month: 12, day: 31] }
+    context "with a day_of_month part" do
+      let( :type ) {
+        described_class.type_for( :day_of_month )
+      }
 
-      it "exposes its year through its #year_of_scheme property" do
-        expect( subject.year_of_scheme ).to eq( 2001 )
+      it "rejects construction with a non-Fixnum day value" do
+        expect{ type.new( '22'  ) }.to raise_error( ArgumentError )
+        expect{ type.new(  22.0 ) }.to raise_error( ArgumentError )
+        expect{ type.new(  nil  ) }.to raise_error( ArgumentError )
       end
 
-      it "exposes its year through its #year property" do
-        expect( subject.year ).to eq( 2001 )
+      it "exposes its month as #day_of_month and #day" do
+        frame = type.new( 24 )
+        expect( frame.day_of_month ).to eq( 24 )
+        expect( frame.day          ).to eq( 24 )
       end
+    end
 
-      it "exposes its month through its #month_of_year property" do
-        expect( subject.month_of_year ).to eq( 10 )
-      end
-
-      it "exposes its month through its #month property" do
-        expect( subject.month ).to eq( 10 )
-      end
-
-      it "exposes its day through its #day_of_month property" do
-        expect( subject.day_of_month ).to eq( 20 )
-      end
-
-      it "exposes its day through its #day property" do
-        expect( subject.day ).to eq( 20 )
-      end
+    context "with a scope of Scheme and a precision of Day" do
+      let( :frame_a ) {
+        described_class[ year_of_scheme: 2012, month: 10, day_of_month: 19 ]
+      }
+      let( :frame_b ) {
+        described_class[ year_of_scheme: 2014, quarter: 4, month: 3, day_of_month: 31 ]
+      }
 
       it "is convertible to the time at the start of the day" do
-        expect( subject.to_time ).to eq( Time.new(2001, 10, 20, 0, 0, 0) )
+        expect( frame_a.to_time ).to eq( Time.new(2012, 10, 19, 0, 0, 0) )
+        expect( frame_b.to_time ).to eq( Time.new(2014, 12, 31, 0, 0, 0) )
       end
 
       it "is convertible to range from day start until (but not including) next day start" do
-        frame_start      = Time.new(2001, 10, 20, 0, 0, 0)
-        next_frame_start = Time.new(2001, 10, 21, 0, 0, 0)
-        expect( subject.to_range ).to eq( frame_start...next_frame_start )
+        frame_a_start      = Time.new(2012, 10, 19, 0, 0, 0)
+        frame_a_next_start = Time.new(2012, 10, 20, 0, 0, 0)
+        expect( frame_a.to_range ).to eq( frame_a_start...frame_a_next_start )
 
-        frame_start      = Time.new(2015, 12, 31, 0, 0, 0)
-        next_frame_start = Time.new(2016,  1,  1, 0, 0, 0)
-        expect( subject_2.to_range ).to eq( frame_start...next_frame_start )
+        frame_b_start      = Time.new(2014, 12, 31, 0, 0, 0)
+        frame_b_next_start = Time.new(2015,  1,  1, 0, 0, 0)
+        expect( frame_b.to_range ).to eq( frame_b_start...frame_b_next_start )
       end
     end
-
-    context "an instance for a specific quarter and month (of quarter)" do
-      subject           { described_class[quarter: 2, month:            3] }
-      let( :subject_2 ) { described_class[quarter: 4, month_of_quarter: 2] }
-
-      it "exposes its quarter through its #quarter_of_year property" do
-        expect( subject.quarter_of_year   ).to eq( 2 )
-        expect( subject_2.quarter_of_year ).to eq( 4 )
-      end
-
-      it "exposes its quarter through its #quarter property" do
-        expect( subject.quarter   ).to eq( 2 )
-        expect( subject_2.quarter ).to eq( 4 )
-      end
-
-      it "exposes its month through its #month_of_quarter property" do
-        expect( subject.month_of_quarter   ).to eq( 3 )
-        expect( subject_2.month_of_quarter ).to eq( 2 )
-      end
-
-      it "exposes its month through its #month property" do
-        expect( subject.month   ).to eq( 3 )
-        expect( subject_2.month ).to eq( 2 )
-      end
-
-      it "is not convertible to a time" do
-        expect( subject   ).not_to respond_to( :to_time )
-        expect( subject_2 ).not_to respond_to( :to_time )
-      end
-
-      it "is not convertible to a range" do
-        expect( subject   ).not_to respond_to( :to_range )
-        expect( subject_2 ).not_to respond_to( :to_range )
-      end
-    end
-
-    context "an instance for a specific year, quarter, and month (of quarter)" do
-      subject           { described_class[year: 1991, quarter: 2, month:            3] }
-      let( :subject_2 ) { described_class[year: 1995, quarter: 3, month:            2] }
-      let( :subject_3 ) { described_class[year: 1997, quarter: 4, month_of_quarter: 3] }
-
-      it "exposes its year through its #year_of_scheme property" do
-        expect( subject.year_of_scheme ).to eq( 1991 )
-      end
-
-      it "exposes its year through its #year property" do
-        expect( subject.year ).to eq( 1991 )
-      end
-
-      it "exposes its quarter through its #quarter_of_year property" do
-        expect( subject.quarter_of_year ).to eq( 2 )
-      end
-
-      it "exposes its quarter through its #quarter property" do
-        expect( subject.quarter ).to eq( 2 )
-      end
-
-      it "exposes its month through its #month_of_quarter property" do
-        expect( subject.month_of_quarter ).to eq( 3 )
-      end
-
-      it "exposes its month through its #month property" do
-        expect( subject.month ).to eq( 3 )
-      end
-
-
-      it "is convertible to the time at the start of the month" do
-        expect( subject.to_time ).to eq( Time.new(1991, 6, 1, 0, 0, 0) )
-      end
-
-      it "is convertible to range from month start until (but not including) next month start" do
-        frame_start      = Time.new(1991, 6, 1, 0, 0, 0)
-        next_frame_start = Time.new(1991, 7, 1, 0, 0, 0)
-        expect( subject.to_range ).to eq( frame_start...next_frame_start )
-
-        frame_start      = Time.new(1995, 8, 1, 0, 0, 0)
-        next_frame_start = Time.new(1995, 9, 1, 0, 0, 0)
-        expect( subject_2.to_range ).to eq( frame_start...next_frame_start )
-
-        frame_start      = Time.new(1997, 12, 1, 0, 0, 0)
-        next_frame_start = Time.new(1998,  1, 1, 0, 0, 0)
-        expect( subject_3.to_range ).to eq( frame_start...next_frame_start )
-      end
-    end
-
   end
 
 end

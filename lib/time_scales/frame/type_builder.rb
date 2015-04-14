@@ -3,6 +3,27 @@ module TimeScales
   module Frame
 
     class TypeBuilder
+
+      class << self
+
+        private
+
+        def add_type_cache
+          # Closure variable accessible via instance method
+          # from any instance.
+          _type_cache = {}
+
+          define_method(:type_cache){
+            _type_cache
+          }
+
+          private :type_cache
+        end
+
+      end
+
+      add_type_cache
+
       attr_reader :parts
 
       def initialize(parts)
@@ -10,6 +31,14 @@ module TimeScales
       end
 
       def call
+        type_cache.fetch( parts ) {
+          type_cache[parts] = build_type
+        }
+      end
+
+      private
+
+      def build_type
         _parts = parts ; _is_scheme_scoped = scheme_scoped?
         klass = Class.new type_base_class do
           _parts.each do |part| ; include part.component_mixin ; end
