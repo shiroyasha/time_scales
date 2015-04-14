@@ -56,6 +56,10 @@ module TimeScales
       def subdivision_name
         subdivision.name
       end
+
+      def &(time)
+        raise NotImplementedError, "Subclass responsibility"
+      end
     end
 
     class YearOfSchemeClass < AbstractPart
@@ -67,6 +71,10 @@ module TimeScales
       def default_for_unit? ; true    ; end
       def component_mixin ; Frame::PartComponents::HasYearOfScheme ; end
       def scheme_scoped_precision_mixin ; Frame::Precisions::HasYearOfSchemePrecision ; end
+
+      def &(time)
+        time.year
+      end
     end
 
     YearOfScheme = YearOfSchemeClass.instance
@@ -81,6 +89,11 @@ module TimeScales
       def default_for_unit? ; true ; end
       def component_mixin ; Frame::PartComponents::HasQuarterOfYear ; end
       def scheme_scoped_precision_mixin ; Frame::Precisions::HasQuarterOfSchemePrecision ; end
+
+      def &(time)
+        month_offs = time.month - 1
+        ( month_offs / 3 ) + 1
+      end
     end
 
     QuarterOfYear = QuarterOfYearClass.instance
@@ -95,6 +108,10 @@ module TimeScales
       def default_for_unit? ; true ; end
       def component_mixin ; Frame::PartComponents::HasMonthOfYear ; end
       def scheme_scoped_precision_mixin ; Frame::Precisions::HasMonthOfSchemePrecision ; end
+
+      def &(time)
+        time.month
+      end
     end
 
     MonthOfYear = MonthOfYearClass.instance
@@ -109,6 +126,11 @@ module TimeScales
       def default_for_unit? ; false    ; end
       def component_mixin ; Frame::PartComponents::HasMonthOfQuarter ; end
       def scheme_scoped_precision_mixin ; Frame::Precisions::HasMonthOfSchemePrecision ; end
+
+      def &(time)
+        month_offs = time.month - 1
+        ( month_offs % 3 ) + 1
+      end
     end
 
     MonthOfQuarter = MonthOfQuarterClass.instance
@@ -123,6 +145,10 @@ module TimeScales
       def default_for_unit? ; true ; end
       def component_mixin ; Frame::PartComponents::HasDayOfMonth ; end
       def scheme_scoped_precision_mixin ; Frame::Precisions::HasDayOfSchemePrecision ; end
+
+      def &(time)
+        time.day
+      end
     end
 
     DayOfMonth = DayOfMonthClass.instance
