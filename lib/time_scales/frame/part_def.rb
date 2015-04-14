@@ -1,7 +1,7 @@
 module TimeScales
   module Frame
 
-    class PartSpec
+    class PartDef
       attr_reader :key, :value, :part
 
       def initialize(key, value=nil)
