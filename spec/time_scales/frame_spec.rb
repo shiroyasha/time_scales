@@ -33,34 +33,49 @@ module TimeScales
       end
     end
 
-    it "is == to another instance with same parts and part values" do
-      expect( described_class[ year: 2010, month: 10 ] ).
-        to eq( described_class[ year: 2010, month: 10 ] )
+    it "is equal and hash-key-equal to another instance with same parts and part values" do
+      actual_a   = described_class[ year: 2010, month: 10 ]
+      expected_a = described_class[ year: 2010, month: 10 ]
+      expect( actual_a ).to  eq( expected_a )
+      expect( actual_a ).to eql( expected_a )
+      expect( actual_a.hash ).to eql( expected_a.hash )
 
-      expect( described_class[ day: 21 ] ).
-        to eq( described_class[ day: 21 ] )
+
+      actual_b   = described_class[ day: 21 ]
+      expected_b = described_class[ day: 21 ]
+      expect( actual_b ).to  eq( expected_b )
+      expect( actual_b ).to eql( expected_b )
+      expect( actual_b.hash ).to eql( expected_b.hash )
     end
 
-    it "is not == to another instance with different parts" do
-      expect( described_class[ year: 2010, month: 10 ] ).
-        not_to eq( described_class[ year: 2010 ] )
+    it "is not equal to another instance with different parts" do
+      actual_a   = described_class[ year: 2010, month: 10 ]
+      expected_a = described_class[ year: 2010 ]
+      expect( actual_a ).not_to  eq( expected_a )
+      expect( actual_a ).not_to eql( expected_a )
 
-      expect( described_class[ day: 21 ] ).
-        not_to eq( described_class[ month: 9, day: 21 ] )
+      actual_b   = described_class[ day: 21 ]
+      expected_b = described_class[ month: 9, day: 21 ]
+      expect( actual_b ).not_to  eq( expected_b )
+      expect( actual_b ).not_to eql( expected_b )
 
-      expect( described_class[ quarter: 3, month: 2 ] ).
-        not_to eq( described_class[ month: 3, day: 2 ] )
+      actual_c   = described_class[ quarter: 3, month: 2 ]
+      expected_c = described_class[ month: 3, day: 2 ]
+      expect( actual_c ).not_to  eq( expected_c )
+      expect( actual_c ).not_to eql( expected_c )
     end
 
-    it "is not == to another instance with any differning values for same parts" do
-      expect( described_class[ year: 2010, month: 10 ] ).
-        not_to eq( described_class[ year: 2011, month: 10 ] )
+    it "is not equal to another instance with any differing values for same parts" do
+      actual_a   = described_class[ year: 2010, month: 10 ]
+      expected_a = described_class[ year: 2011, month: 10 ]
+      expect( actual_a ).not_to  eq( expected_a )
+      expect( actual_a ).not_to eql( expected_a )
 
-      expect( described_class[ month: 9, day: 21 ] ).
-        not_to eq( described_class[ month: 9, day: 22 ] )
+      actual_b   = described_class[ month: 9, day: 21 ]
+      expected_b = described_class[ month: 9, day: 22 ]
+      expect( actual_b ).not_to  eq( expected_b )
+      expect( actual_b ).not_to eql( expected_b )
     end
-
-    it "fulfills a hash-key equality contract" # Pending
 
     context "with a year-of-scheme part" do
       let( :type ) {

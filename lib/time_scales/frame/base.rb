@@ -38,9 +38,18 @@ module TimeScales
         @parts.dup
       end
 
-      def ==(other)
+      # Symmetric, hash-key-friendly equality.
+      def eql?(other)
         self.class == other.class &&
           self._to_a == other._to_a
+      end
+
+      # Same as symmetric equality.  Currently no type-coercive
+      # behavior.
+      alias == eql?
+
+      def hash
+        @hash ||= self.class.hash ^ _to_a.hash
       end
 
       def to_a
