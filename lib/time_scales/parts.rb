@@ -9,6 +9,7 @@ module TimeScales
         MonthOfYear,
         MonthOfQuarter,
         DayOfMonth,
+        DayOfYear,
       ].freeze
     end
 
@@ -152,6 +153,24 @@ module TimeScales
     end
 
     DayOfMonth = DayOfMonthClass.instance
+
+
+    class DayOfYearClass < AbstractPart
+      include Singleton
+
+      def symbol ; :day_of_year  ; end
+      def subdivision ; Units::Day   ; end
+      def scope       ; Units::Year ; end
+      def default_for_unit? ; false ; end
+      def component_mixin ; Frame::PartComponents::HasDayOfYear ; end
+      def scheme_scoped_precision_mixin ; Frame::Precisions::HasDayOfSchemePrecision ; end
+
+      def &(time)
+        time.yday
+      end
+    end
+
+    DayOfYear = DayOfYearClass.instance
 
   end
 

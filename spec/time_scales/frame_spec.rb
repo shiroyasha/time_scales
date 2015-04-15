@@ -245,6 +245,30 @@ module TimeScales
       end
     end
 
+    context "with a day_of_year part" do
+      let( :type ) {
+        described_class.type_for( :day_of_year )
+      }
+
+      it "rejects construction with a non-Fixnum day value" do
+        expect{ type.new( '200'  ) }.to raise_error( ArgumentError )
+        expect{ type.new(  200.0 ) }.to raise_error( ArgumentError )
+        expect{ type.new(  nil   ) }.to raise_error( ArgumentError )
+      end
+
+      it "exposes its day as #day_of_year and #day" do
+        frame = type.new( 150 )
+        expect( frame.day_of_year ).to eq( 150 )
+        expect( frame.day         ).to eq( 150 )
+      end
+
+      it "can be built from a time" do
+        frame = type & Time.new( 2013, 12, 26 )
+        expected_frame = type.new( 360 )
+        expect( frame ).to eq( expected_frame )
+      end
+    end
+
     context "with a scope of Scheme and a precision of Day" do
       let( :frame_a ) {
         described_class[ year_of_scheme: 2012, month: 10, day_of_month: 19 ]
@@ -252,10 +276,14 @@ module TimeScales
       let( :frame_b ) {
         described_class[ year_of_scheme: 2014, quarter: 4, month: 3, day_of_month: 31 ]
       }
+      let( :frame_c ) {
+        described_class[ year_of_scheme: 2015, day_of_year: 90 ]
+      }
 
       it "is convertible to the time at the start of the day" do
         expect( frame_a.to_time ).to eq( Time.new(2012, 10, 19, 0, 0, 0) )
         expect( frame_b.to_time ).to eq( Time.new(2014, 12, 31, 0, 0, 0) )
+        expect( frame_c.to_time ).to eq( Time.new(2015,  3, 31, 0, 0, 0) )
       end
 
       it "is convertible to range from day start until (but not including) next day start" do
@@ -265,6 +293,10 @@ module TimeScales
 
         frame_b_start      = Time.new(2014, 12, 31, 0, 0, 0)
         frame_b_next_start = Time.new(2015,  1,  1, 0, 0, 0)
+        expect( frame_b.to_range ).to eq( frame_b_start...frame_b_next_start )
+
+        frame_c_start      = Time.new(2015,  3, 31, 0, 0, 0)
+        frame_c_next_start = Time.new(2015,  4,  1, 0, 0, 0)
         expect( frame_b.to_range ).to eq( frame_b_start...frame_b_next_start )
       end
     end

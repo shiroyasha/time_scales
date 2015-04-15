@@ -14,6 +14,7 @@ module TimeScales
         @begin_time = begin
           struct = TimeStruct.new
           prepare_time_struct struct
+          struct.normalize
           Time.new( *struct.to_a )
         end
       end

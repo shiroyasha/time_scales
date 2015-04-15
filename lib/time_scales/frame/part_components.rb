@@ -86,7 +86,7 @@ module TimeScales
         end
 
         def prepare_time_struct(struct)
-          struct.day = (struct.month || 1) + day_of_month - 1
+          struct.day = (struct.day || 1) + day_of_month - 1
           super
         end
 
@@ -95,6 +95,38 @@ module TimeScales
 
           def _parts
             super << Parts::DayOfMonth
+          end
+        end
+      end
+
+      module HasDayOfYear
+        def self.included(other)
+          other.extend HasDayOfYear::ClassMixin
+        end
+
+        attr_reader :day_of_year
+
+        def day
+          day_of_year
+        end
+
+        private
+
+        def _initialize(args_array)
+          super
+          @day_of_year = ensure_fixnum( args_array.shift )
+        end
+
+        def prepare_time_struct(struct)
+          struct.day = (struct.day || 1) + day_of_year - 1
+          super
+        end
+
+        module ClassMixin
+          protected
+
+          def _parts
+            super << Parts::DayOfYear
           end
         end
       end
