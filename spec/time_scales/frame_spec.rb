@@ -78,6 +78,12 @@ module TimeScales
         expect( frame.year_of_scheme ).to eq( 2014 )
         expect( frame.year           ).to eq( 2014 )
       end
+
+      it "can be built from a time" do
+        frame = type & Time.new( 2009, 10, 20 )
+        expected_frame = type.new( 2009 )
+        expect( frame ).to eq( expected_frame )
+      end
     end
 
     context "with a scope of Scheme and a precision of Year" do
@@ -111,6 +117,12 @@ module TimeScales
         frame = type.new( 2 )
         expect( frame.quarter_of_year ).to eq( 2 )
         expect( frame.quarter         ).to eq( 2 )
+      end
+
+      it "can be built from a time" do
+        frame = type & Time.new( 2009, 6, 15 )
+        expected_frame = type.new( 2 )
+        expect( frame ).to eq( expected_frame )
       end
     end
 
@@ -153,6 +165,12 @@ module TimeScales
         expect( frame.month_of_year ).to eq( 9 )
         expect( frame.month         ).to eq( 9 )
       end
+
+      it "can be built from a time" do
+        frame = type & Time.new( 2009, 5, 15 )
+        expected_frame = type.new( 5 )
+        expect( frame ).to eq( expected_frame )
+      end
     end
 
     context "with a month-of-quarter part" do
@@ -170,6 +188,12 @@ module TimeScales
         frame = type.new( 2 )
         expect( frame.month_of_quarter ).to eq( 2 )
         expect( frame.month            ).to eq( 2 )
+      end
+
+      it "can be built from a time" do
+        frame = type & Time.new( 2009, 6, 15 )
+        expected_frame = type.new( 3 )
+        expect( frame ).to eq( expected_frame )
       end
     end
 
@@ -213,6 +237,12 @@ module TimeScales
         expect( frame.day_of_month ).to eq( 24 )
         expect( frame.day          ).to eq( 24 )
       end
+
+      it "can be built from a time" do
+        frame = type & Time.new( 2009, 6, 15 )
+        expected_frame = type.new( 15 )
+        expect( frame ).to eq( expected_frame )
+      end
     end
 
     context "with a scope of Scheme and a precision of Day" do
@@ -236,6 +266,18 @@ module TimeScales
         frame_b_start      = Time.new(2014, 12, 31, 0, 0, 0)
         frame_b_next_start = Time.new(2015,  1,  1, 0, 0, 0)
         expect( frame_b.to_range ).to eq( frame_b_start...frame_b_next_start )
+      end
+    end
+
+    context "with several parts" do
+      let( :type ) {
+        described_class.type_for( :quarter_of_year, :month_of_quarter, :day_of_month )
+      }
+
+      it "can be built from a time" do
+        frame = type & Time.new( 2011, 7, 17 )
+        expected_frame = type.new( 3, 1, 17 )
+        expect( frame ).to eq( expected_frame )
       end
     end
   end
