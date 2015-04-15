@@ -11,6 +11,13 @@ module TimeScales
             freeze
         end
 
+        def &(time)
+          part_values = parts.map { |part|
+            part & time
+          }
+          new( *part_values )
+        end
+
         private
 
         def _parts
@@ -29,6 +36,23 @@ module TimeScales
           }
         ]
         @parts.dup
+      end
+
+      def ==(other)
+        self.class == other.class &&
+          self._to_a == other._to_a
+      end
+
+      def to_a
+        _to_a.dup
+      end
+
+      protected
+
+      def _to_a
+        @to_a ||= self.class.parts.map{ |part|
+          send( part.symbol )
+        }.freeze
       end
 
       private

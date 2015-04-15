@@ -33,6 +33,35 @@ module TimeScales
       end
     end
 
+    it "is == to another instance with same parts and part values" do
+      expect( described_class[ year: 2010, month: 10 ] ).
+        to eq( described_class[ year: 2010, month: 10 ] )
+
+      expect( described_class[ day: 21 ] ).
+        to eq( described_class[ day: 21 ] )
+    end
+
+    it "is not == to another instance with different parts" do
+      expect( described_class[ year: 2010, month: 10 ] ).
+        not_to eq( described_class[ year: 2010 ] )
+
+      expect( described_class[ day: 21 ] ).
+        not_to eq( described_class[ month: 9, day: 21 ] )
+
+      expect( described_class[ quarter: 3, month: 2 ] ).
+        not_to eq( described_class[ month: 3, day: 2 ] )
+    end
+
+    it "is not == to another instance with any differning values for same parts" do
+      expect( described_class[ year: 2010, month: 10 ] ).
+        not_to eq( described_class[ year: 2011, month: 10 ] )
+
+      expect( described_class[ month: 9, day: 21 ] ).
+        not_to eq( described_class[ month: 9, day: 22 ] )
+    end
+
+    it "fulfills a hash-key equality contract" # Pending
+
     context "with a year-of-scheme part" do
       let( :type ) {
         described_class.type_for( :year_of_scheme )
