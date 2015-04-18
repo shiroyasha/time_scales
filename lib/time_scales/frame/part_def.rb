@@ -33,6 +33,9 @@ module TimeScales
           if parts.empty?
             parts = Parts.all.select { |part| part.subdivision === key }
           end
+          if parts.empty?
+            raise NoPartOrUnitForKeyError, "No part or unit matches key #{key.inspect}"
+          end
           parts
         end
       end

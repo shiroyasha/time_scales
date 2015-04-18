@@ -7,4 +7,7 @@ require "time_scales/frame"
 
 module TimeScales
 
+  class TimeScalesError < StandardError ; end
+  class NoPartOrUnitForKeyError < TimeScalesError ; end
+
 end

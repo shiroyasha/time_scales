@@ -4,6 +4,12 @@ module TimeScales
 
   describe Frame do
     describe '::type_for' do
+      it "raises ArgumentError with a non-part-key argument" do
+        expect{
+          described_class.type_for :hour_of_minute
+        }.to raise_exception( NoPartOrUnitForKeyError )
+      end
+
       it "builds a type for a list of part keys in arbitrary order" do
         type = described_class.type_for(
           Units::Day,
