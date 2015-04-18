@@ -10,9 +10,7 @@ module TimeScales
 
         attr_reader :year_of_scheme
 
-        def year
-          year_of_scheme
-        end
+        alias year year_of_scheme
 
         private
 
@@ -42,9 +40,7 @@ module TimeScales
 
         attr_reader :month_of_year
 
-        def month
-          month_of_year
-        end
+        alias month month_of_year
 
         private
 
@@ -74,9 +70,7 @@ module TimeScales
 
         attr_reader :day_of_month
 
-        def day
-          day_of_month
-        end
+        alias day day_of_month
 
         private
 
@@ -106,9 +100,7 @@ module TimeScales
 
         attr_reader :day_of_year
 
-        def day
-          day_of_year
-        end
+        alias day day_of_year
 
         private
 
@@ -138,9 +130,7 @@ module TimeScales
 
         attr_reader :hour_of_day
 
-        def hour
-          hour_of_day
-        end
+        alias hour hour_of_day
 
         private
 
@@ -170,9 +160,7 @@ module TimeScales
 
         attr_reader :month_of_quarter
 
-        def month
-          month_of_quarter
-        end
+        alias month month_of_quarter
 
         private
 
@@ -202,9 +190,7 @@ module TimeScales
 
         attr_reader :quarter_of_year
 
-        def quarter
-          quarter_of_year
-        end
+        alias quarter quarter_of_year
 
         private
 
