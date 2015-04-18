@@ -72,6 +72,16 @@ module TimeScales
 
     Day = DayClass.instance
 
+
+    class HourClass < AbstractUnit
+      include Singleton
+
+      def symbol ; :hour ; end
+      def scale  ;  17   ; end
+    end
+
+    Hour = HourClass.instance
+
   end
 
 end

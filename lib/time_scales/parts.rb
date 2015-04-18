@@ -10,6 +10,8 @@ module TimeScales
         MonthOfQuarter,
         DayOfMonth,
         DayOfYear,
+        DayOfQuarter,
+        HourOfDay,
       ].freeze
     end
 
@@ -140,7 +142,7 @@ module TimeScales
     class DayOfMonthClass < AbstractPart
       include Singleton
 
-      def symbol ; :day_of_month  ; end
+      def symbol ; :day_of_month ; end
       def subdivision ; Units::Day   ; end
       def scope       ; Units::Month ; end
       def default_for_unit? ; true ; end
@@ -158,7 +160,7 @@ module TimeScales
     class DayOfYearClass < AbstractPart
       include Singleton
 
-      def symbol ; :day_of_year  ; end
+      def symbol ; :day_of_year ; end
       def subdivision ; Units::Day   ; end
       def scope       ; Units::Year ; end
       def default_for_unit? ; false ; end
@@ -171,6 +173,46 @@ module TimeScales
     end
 
     DayOfYear = DayOfYearClass.instance
+
+
+    class DayOfQuarterClass < AbstractPart
+      include Singleton
+
+      def symbol ; :day_of_quarter ; end
+      def subdivision ; Units::Day     ; end
+      def scope       ; Units::Quarter ; end
+      def default_for_unit? ; false ; end
+      def component_mixin ; Frame::PartComponents::HasDayOfQuarter ; end
+      def scheme_scoped_precision_mixin ; Frame::Precisions::HasDayOfSchemePrecision ; end
+
+      def &(time)
+        month_offs = time.month - 1
+        qtr_offs = month_offs / 3
+        qtr_start_mo = ( qtr_offs * 3 ) + 1
+        qtr_start_time = Time.new( time.year, qtr_start_mo, 1)
+        time.yday - qtr_start_time.yday + 1
+      end
+    end
+
+    DayOfQuarter = DayOfQuarterClass.instance
+
+
+    class HourOfDayClass < AbstractPart
+      include Singleton
+
+      def symbol ; :hour_of_day ; end
+      def subdivision ; Units::Hour     ; end
+      def scope       ; Units::Day ; end
+      def default_for_unit? ; false ; end
+      def component_mixin ; Frame::PartComponents::HasHourOfDay ; end
+      def scheme_scoped_precision_mixin ; Frame::Precisions::HasHourOfSchemePrecision ; end
+
+      def &(time)
+        time.hour
+      end
+    end
+
+    HourOfDay = HourOfDayClass.instance
 
   end
 

@@ -90,6 +90,22 @@ module TimeScales
         end
       end
     end
+
+    describe Parts::DayOfQuarter do
+      it "is included in the Parts::all collection" do
+        expect( Parts.all ).to include( subject )
+      end
+
+      describe '#&' do
+        it "Extracts the day-of-quarter value from the given time" do
+          expect( subject & Time.new(1998,  2, 14,  0,  0,   0            ) ).to eq( 45 )
+          expect( subject & Time.new(1998,  4,  1,  0,  0,   0            ) ).to eq(  1 )
+          expect( subject & Time.new(2000,  4,  1,  0,  0,   0            ) ).to eq(  1 )
+          expect( subject & Time.new(2000, 12, 31, 23, 59, _59_and_a_half ) ).to eq( 92 )
+        end
+      end
+    end
+
   end
 
 end

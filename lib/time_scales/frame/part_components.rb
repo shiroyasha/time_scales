@@ -131,6 +131,38 @@ module TimeScales
         end
       end
 
+      module HasHourOfDay
+        def self.included(other)
+          other.extend HasHourOfDay::ClassMixin
+        end
+
+        attr_reader :hour_of_day
+
+        def hour
+          hour_of_day
+        end
+
+        private
+
+        def _initialize(args_array)
+          super
+          @hour_of_day = ensure_fixnum( args_array.shift )
+        end
+
+        def prepare_time_struct(struct)
+          struct.hour = struct.hour.to_i + hour_of_day
+          super
+        end
+
+        module ClassMixin
+          protected
+
+          def _parts
+            super << Parts::HourOfDay
+          end
+        end
+      end
+
       module HasMonthOfQuarter
         def self.included(other)
           other.extend HasMonthOfQuarter::ClassMixin

@@ -24,11 +24,11 @@ module TimeScales
       end
 
       def parts
-        @parts ||= assembly_sequence.map { |ps| ps.part }
+        @parts ||= assembly_sequence.map { |pd| pd.part }
       end
 
       def part_values
-        assembly_sequence.map { |ps| ps.value }
+        assembly_sequence.map { |pd| pd.value }
       end
 
       private

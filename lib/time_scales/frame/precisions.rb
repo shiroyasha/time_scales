@@ -11,7 +11,7 @@ module TimeScales
 
       module Has_N_MonthsOfSchemePrecision
         def succ_begin_time
-          @end_time ||= begin
+          @succ_begin_time ||= begin
             succ_y = year_of_scheme
             succ_m = begin_time.month + n_months_precision
             if succ_m > 12
@@ -53,11 +53,19 @@ module TimeScales
       module HasDayOfSchemePrecision
         # Gets us to the early part of the next day, regardless
         # of DST handling, leap seconds, etc.
-        SECOONDS_IN_26_HOURS = 60 * 60 * 26
+        SECONDS_IN_26_HOURS = 60 * 60 * 26
 
         def succ_begin_time
-          t = begin_time + SECOONDS_IN_26_HOURS
-          @end_time ||= Time.new(t.year, t.month, t.day)
+          t = begin_time + SECONDS_IN_26_HOURS
+          @succ_begin_time ||= Time.new(t.year, t.month, t.day)
+        end
+      end
+
+      module HasHourOfSchemePrecision
+        SECONDS_PER_HOUR = 60 * 60
+
+        def succ_begin_time
+          @succ_begin_time ||= begin_time + SECONDS_PER_HOUR
         end
       end
 
