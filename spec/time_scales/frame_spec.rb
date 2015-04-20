@@ -50,7 +50,21 @@ module TimeScales
         expect( actual_b ).to eq( expected_b )
       end
 
-      it "is not equal to another instance with different parts" do
+      it "is equal to another instance with same outer scope and representing the same range within that scope" do
+        actual_a   = described_class[ year: 2010, quarter: 2, month: 3 ]
+        expected_a = described_class[ year: 2010, month: 6 ]
+        expect( actual_a ).to eq( expected_a )
+
+        actual_b   = described_class[ month: 8, day: 16 ]
+        expected_b = described_class[ quarter: 3, month: 2, day: 16 ]
+        expect( actual_b ).to eq( expected_b )
+
+        actual_c   = described_class[ quarter: 2, month: 1, day: 30 ]
+        expected_c = described_class[ month: 4, day: 30 ]
+        expect( actual_c ).to eq( expected_c )
+      end
+
+      it "is not equal to another instance with different combination of outer scopes and precision" do
         actual_a   = described_class[ year: 2010, month: 10 ]
         expected_a = described_class[ year: 2010 ]
         expect( actual_a ).not_to eq( expected_a )
@@ -62,9 +76,13 @@ module TimeScales
         actual_c   = described_class[ quarter: 3, month: 2 ]
         expected_c = described_class[ month: 3, day: 2 ]
         expect( actual_c ).not_to eq( expected_c )
+
+        actual_d   = described_class[ year: 2010, month: 4 ]
+        expected_d = described_class[ year: 2010, quarter: 2 ]
+        expect( actual_d ).not_to eq( expected_d )
       end
 
-      it "is not equal to another instance with any differing values for same parts" do
+      it "is not equal to another instance representing a different range within its scope" do
         actual_a   = described_class[ year: 2010, month: 10 ]
         expected_a = described_class[ year: 2011, month: 10 ]
         expect( actual_a ).not_to eq( expected_a )
@@ -72,6 +90,10 @@ module TimeScales
         actual_b   = described_class[ month: 9, day: 21 ]
         expected_b = described_class[ month: 9, day: 22 ]
         expect( actual_b ).not_to eq( expected_b )
+
+        actual_c   = described_class[ month: 9, day: 21 ]
+        expected_c = described_class[ quarter: 3, month: 3, day: 22 ]
+        expect( actual_c ).not_to eq( expected_c )
       end
     end
 
@@ -100,6 +122,11 @@ module TimeScales
         actual_c   = described_class[ quarter: 3, month: 2 ]
         expected_c = described_class[ month: 3, day: 2 ]
         expect( actual_c ).not_to eql( expected_c )
+
+        # These are ==, but not eql?
+        actual_d   = described_class[ month: 9, day: 21 ]
+        expected_d = described_class[ quarter: 3, month: 3, day: 21 ]
+        expect( actual_d ).not_to eql( expected_d )
       end
 
       it "is not hash-key equal to another instance with any differing values for same parts" do
