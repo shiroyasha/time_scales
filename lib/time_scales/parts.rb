@@ -17,6 +17,10 @@ module TimeScales
     end
 
     class AbstractPart
+      def to_time_scales_part
+        self
+      end
+
       def ===(other)
         self == other || symbol == other
       end

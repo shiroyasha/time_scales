@@ -3,6 +3,10 @@ module TimeScales
   module Units
 
     class AbstractUnit
+      def to_time_scales_unit
+        self
+      end
+
       def ===(other)
         self == other || symbol == other
       end
