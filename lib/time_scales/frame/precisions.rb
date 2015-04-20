@@ -69,6 +69,14 @@ module TimeScales
         end
       end
 
+      module HasMinuteOfSchemePrecision
+        SECONDS_PER_MINUTE = 60
+
+        def succ_begin_time
+          @succ_begin_time ||= begin_time + SECONDS_PER_MINUTE
+        end
+      end
+
     end
 
   end

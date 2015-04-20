@@ -1,6 +1,12 @@
 module TimeScales
 
-  class TimeStruct < Struct.new(:year, :month, :day, :hour)
+  class TimeStruct < Struct.new(
+    :year,
+    :month,
+    :day,
+    :hour,
+    :minute,
+  )
 
     def normalize
       return unless year && day

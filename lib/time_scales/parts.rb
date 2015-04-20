@@ -12,6 +12,7 @@ module TimeScales
         DayOfYear,
         DayOfQuarter,
         HourOfDay,
+        MinuteOfHour,
       ].freeze
     end
 
@@ -201,8 +202,8 @@ module TimeScales
       include Singleton
 
       def symbol ; :hour_of_day ; end
-      def subdivision ; Units::Hour     ; end
-      def scope       ; Units::Day ; end
+      def subdivision ; Units::Hour ; end
+      def scope       ; Units::Day  ; end
       def default_for_unit? ; false ; end
       def component_mixin ; Frame::PartComponents::HasHourOfDay ; end
       def scheme_scoped_precision_mixin ; Frame::Precisions::HasHourOfSchemePrecision ; end
@@ -213,6 +214,24 @@ module TimeScales
     end
 
     HourOfDay = HourOfDayClass.instance
+
+
+    class MinuteOfHourClass < AbstractPart
+      include Singleton
+
+      def symbol ; :minute_of_hour ; end
+      def subdivision ; Units::Minute ; end
+      def scope       ; Units::Hour   ; end
+      def default_for_unit? ; true ; end
+      def component_mixin ; Frame::PartComponents::HasMinuteOfHour ; end
+      def scheme_scoped_precision_mixin ; Frame::Precisions::HasMinuteOfSchemePrecision ; end
+
+      def &(time)
+        time.min
+      end
+    end
+
+    MinuteOfHour = MinuteOfHourClass.instance
 
   end
 

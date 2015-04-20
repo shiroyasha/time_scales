@@ -82,6 +82,16 @@ module TimeScales
 
     Hour = HourClass.instance
 
+
+    class MinuteClass < AbstractUnit
+      include Singleton
+
+      def symbol ; :minute ; end
+      def scale  ;  8      ; end
+    end
+
+    Minute = MinuteClass.instance
+
   end
 
 end

@@ -435,6 +435,62 @@ module TimeScales
       end
     end
 
+    context "with a minute_of_hour part" do
+      let( :type ) {
+        described_class.type_for( :minute_of_hour )
+      }
+
+      it "rejects construction with a non-Fixnum minute value" do
+        expect{ type.new( '45'  ) }.to raise_error( ArgumentError )
+        expect{ type.new(  45.0 ) }.to raise_error( ArgumentError )
+        expect{ type.new(  nil  ) }.to raise_error( ArgumentError )
+      end
+
+      it "exposes its minute as #minute_of_hour and #minute" do
+        frame = type.new( 35 )
+        expect( frame.minute_of_hour ).to eq( 35 )
+        expect( frame.minute         ).to eq( 35 )
+      end
+
+      it "can be built from a time" do
+        frame = type & Time.new( 2013, 12, 26, 10, 50 )
+        expected_frame = type.new( 50 )
+        expect( frame ).to eq( expected_frame )
+      end
+    end
+
+    context "with a scope of Scheme and a precision of Minute" do
+      let( :frame_a ) {
+        described_class[ year_of_scheme: 2012, month: 9, day: 19, hour: 0, minute_of_hour: 0 ]
+      }
+      let( :frame_b ) {
+        described_class[ year_of_scheme: 2015, day_of_year: 10, hour: 14, minute: 10 ]
+      }
+      let( :frame_c) {
+        described_class[ year_of_scheme: 2015, day_of_year: 10, hour: 23, minute: 59 ]
+      }
+
+      it "is convertible to the time at the start of the day" do
+        expect( frame_a.to_time ).to eq( Time.new(2012, 9, 19,  0,  0, 0) )
+        expect( frame_b.to_time ).to eq( Time.new(2015, 1, 10, 14, 10, 0) )
+        expect( frame_c.to_time ).to eq( Time.new(2015, 1, 10, 23, 59, 0) )
+      end
+
+      it "is convertible to range from day start until (but not including) next day start" do
+        frame_a_start      = Time.new(2012, 9, 19,  0,  0, 0)
+        frame_a_next_start = Time.new(2012, 9, 19,  0,  1, 0)
+        expect( frame_a.to_range ).to eq( frame_a_start...frame_a_next_start )
+
+        frame_b_start      = Time.new(2015, 1, 10, 14, 10, 0)
+        frame_b_next_start = Time.new(2015, 1, 10, 14, 11, 0)
+        expect( frame_b.to_range ).to eq( frame_b_start...frame_b_next_start )
+
+        frame_c_start      = Time.new(2015, 1, 10, 23, 59, 0)
+        frame_c_next_start = Time.new(2015, 1, 11,  0,  0, 0)
+        expect( frame_b.to_range ).to eq( frame_b_start...frame_b_next_start )
+      end
+    end
+
     context "with several parts and outer scope other than Scheme" do
       let( :type ) {
         described_class.type_for( :quarter_of_year, :month_of_quarter, :day_of_month )

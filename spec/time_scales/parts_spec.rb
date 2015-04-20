@@ -120,6 +120,20 @@ module TimeScales
       end
     end
 
+    describe Parts::MinuteOfHour do
+      it "is included in the Parts::all collection" do
+        expect( Parts.all ).to include( subject )
+      end
+
+      describe '#&' do
+        it "Extracts the hour component from the given time" do
+          expect( subject & Time.new(2010,  1,  1,  0,  0,   0            ) ).to eq(  0 )
+          expect( subject & Time.new(2010,  5, 16, 13, 45,   0            ) ).to eq( 45 )
+          expect( subject & Time.new(2012, 12, 31, 23, 59, _59_and_a_half ) ).to eq( 59 )
+        end
+      end
+    end
+
   end
 
 end
