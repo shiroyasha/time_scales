@@ -110,6 +110,11 @@ The available frame parts are…
 * `TimeScales::Parts::HourOfDay` (`:hour_of_day`, default for `Hour`)
 * `TimeScales::Parts::MinuteOfHour` (`:minute_of_hour`, default for `Minute`)
 
+## Future Plans
+
+Hopefully, TimeScales will eventually deal with ISO-8601 weeks as
+well as variations based on different starting day of week.
+
 ## Development
 
 After checking out the repo, run `bin/setup` to install dependencies. Then,
