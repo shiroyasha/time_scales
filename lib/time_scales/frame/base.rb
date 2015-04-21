@@ -41,6 +41,10 @@ module TimeScales
         self
       end
 
+      def type
+        class
+      end
+
       def parts
         @parts ||= Hash[
           self.class.parts.map { |part|
