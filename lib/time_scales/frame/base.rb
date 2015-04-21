@@ -42,7 +42,7 @@ module TimeScales
       end
 
       def type
-        class
+        self.class
       end
 
       def parts
