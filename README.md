@@ -25,49 +25,55 @@ It's probably most useful to start with some examples…
 
 Example A:
 
-    # Build a frame from part values, and get time value & range.
+``` ruby
+# Build a frame from part values, and get time value & range.
 
-    frame = TimeScales[year: 2015, quarter: 4, month: 1, day: 21]
-    
-    puts frame.begin_time
-    # Output: 2015-10-21 00:00:00 -0700
-    
-    puts frame.to_range
-    # Output: 2015-10-21 00:00:00 -0700...2015-10-22 00:00:00 -0700
-    # Note that the range excludes its end value as indicated by
-    # "...".
+frame = TimeScales[year: 2015, quarter: 4, month: 1, day: 21]
+
+puts frame.begin_time
+# Output: 2015-10-21 00:00:00 -0700
+
+puts frame.to_range
+# Output: 2015-10-21 00:00:00 -0700...2015-10-22 00:00:00 -0700
+# Note that the range excludes its end value as indicated by
+# "...".
+```
 
 Example B:
 
-    # Derive a frame composed of year, day-of-year, and
-    # hour-of-day from a Time value.
-    
-    frame_type = TimeScales[:year, :day, :hour]
-    frame = frame_type & Time.new(2011,6,25 , 13,15)
-    
-    puts(
-      frame.year_of_scheme,
-      frame.day_of_year,
-      frame.hour_of_day,
-    )
-    # == Output ==
-    # 2011
-    # 176
-    # 13
+``` ruby
+# Derive a frame composed of year, day-of-year, and
+# hour-of-day from a Time value.
+
+frame_type = TimeScales[:year, :day, :hour]
+frame = frame_type & Time.new(2011,6,25 , 13,15)
+
+puts(
+  frame.year_of_scheme,
+  frame.day_of_year,
+  frame.hour_of_day,
+)
+# == Output ==
+# 2011
+# 176
+# 13
+```
 
 Example C:
 
-    # Determine whether a date falls within a particular month
-    # of a particular quarter of its year.
+``` ruby
+# Determine whether a date falls within a particular month
+# of a particular quarter of its year.
 
-    frame_type = TimeScales[:quarter, :month]
-    some_time = Time.new(2011,10,31 , 12,00)
-    
-    puts frame_type & some_time == frame_type.new(3, 1)
-    # Output: false
-    
-    puts frame_type & some_time == frame_type.new(4, 1)
-    # Output: true
+frame_type = TimeScales[:quarter, :month]
+some_time = Time.new(2011,10,31 , 12,00)
+
+puts frame_type & some_time == frame_type.new(3, 1)
+# Output: false
+
+puts frame_type & some_time == frame_type.new(4, 1)
+# Output: true
+```
 
 A frame type consists of a number of parts, each of which has a
 scope unit and a subdivision unit. The frame type has an outer
